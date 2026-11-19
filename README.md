@@ -2,9 +2,10 @@
 
 Статический сайт на [Astro](https://astro.build). Видео не хранятся на сайте: их список раз в 4 часа подтягивается из 8 плейлистов YouTube в файл `data/catalog.json`, после чего сайт пересобирается.
 
-- **Хостинг:** Cloudflare Pages (бесплатно, HTTPS, домен, контактная форма).
-- **Автообновление:** GitHub Actions (`.github/workflows/sync-youtube.yml`) каждые 4 часа, плюс ручной запуск.
-- **Форма:** Cloudflare Pages Function `functions/api/contact.js` отправляет письма через [Resend](https://resend.com).
+- **Хостинг:** ваш сервер `185.183.55.151` (Ubuntu/Debian): nginx отдаёт готовые страницы, HTTPS от Let's Encrypt.
+- **Публикация:** GitHub Actions (`deploy.yml`) собирает сайт и копирует его на сервер при каждом изменении.
+- **Автообновление:** `sync-youtube.yml` каждые 4 часа забирает видео с YouTube и, если что-то изменилось, сразу публикует сайт.
+- **Форма:** небольшой Node-сервер `server/contact-server.mjs` на том же сервере отправляет письма через [Resend](https://resend.com).
 
 ## Структура
 
@@ -16,8 +17,10 @@
 | `src/pages/` | Страницы: главная, `/a2/…` и `/b1/…` (8 разделов), `/videos/`, `/about/`, `/contact/`, `/privacy/`. |
 | `src/lib/sections.mjs` | Список 8 разделов. |
 | `src/styles/global.css` | Стили. Фирменные цвета задаются в начале файла (`:root`). |
-| `functions/api/contact.js` | Серверная часть формы обратной связи. |
-| `public/` | Favicon, картинка для соцсетей (`og-image.png`), `robots.txt`, заголовки безопасности (`_headers`). |
+| `functions/api/contact.js` | Логика формы обратной связи (проверка, антиспам, отправка через Resend). |
+| `server/contact-server.mjs` | Запускает эту логику на сервере (служба `elakoo-contact`). |
+| `deploy/` | Настройка сервера: `server-setup.sh`, конфиг nginx, служба systemd. |
+| `public/` | Favicon, картинка для соцсетей (`og-image.png`), `robots.txt`. |
 
 ## Как сайт решает, что Short, а что Video
 
@@ -38,27 +41,42 @@
 
 Пока ID пустые (`null`), сайт работает и показывает «New videos are coming soon». Кнопки YouTube скрыты, пока не задан `channelUrl`.
 
-### 2. Ключ YouTube API
+### 2. Домен → сервер
+В DNS домена (у регистратора или в Cloudflare) создайте две записи:
+
+| Тип | Имя | Значение |
+|---|---|---|
+| A | `@` (elakoo.com) | `185.183.55.151` |
+| A | `www` | `185.183.55.151` |
+
+Если DNS в Cloudflare, поставьте у записей **Proxy status: DNS only** (серое облако), хотя бы на время получения сертификата.
+
+### 3. Настройка сервера (один раз, кнопкой в GitHub)
+1. GitHub → репозиторий → **Settings → Secrets and variables → Actions → New repository secret**:
+   - `SERVER_HOST` = `185.183.55.151`
+   - `SERVER_ROOT_PASSWORD` = пароль root от сервера
+2. **Actions → Server setup (one time) → Run workflow.** Скрипт поставит nginx, Node.js, файрвол, службу формы и, если домен уже смотрит на сервер, HTTPS-сертификат.
+3. Откройте лог запуска. Между строками `=====` будет ключ (от `-----BEGIN OPENSSH PRIVATE KEY-----` до `-----END…-----` включительно). Скопируйте его в новый секрет **`SERVER_SSH_KEY`**.
+4. Удалите лог этого запуска (страница запуска → `…` → Delete workflow run). После этого секрет `SERVER_ROOT_PASSWORD` можно удалить.
+5. **Actions → Deploy to server → Run workflow.** Сайт появится на сервере.
+
+Если HTTPS не получился, потому что DNS ещё не обновился, подождите и снова запустите **Server setup**. Повторный запуск безопасен и новый ключ не создаёт.
+
+### 4. Ключ YouTube API
 1. Откройте [console.cloud.google.com](https://console.cloud.google.com), создайте проект, затем APIs & Services → Library → **YouTube Data API v3** → Enable.
 2. Credentials → Create credentials → API key. В настройках ключа: API restrictions → только YouTube Data API v3.
-3. GitHub → репозиторий → Settings → Secrets and variables → Actions → New repository secret: имя `YOUTUBE_API_KEY`, значение — ключ.
+3. Добавьте GitHub-секрет `YOUTUBE_API_KEY` со значением ключа.
 
-### 3. Cloudflare Pages
-1. Cloudflare → Workers & Pages → Create → Pages → Connect to Git → выберите этот репозиторий.
-2. Framework preset: **Astro**. Build command: `npm run build`. Output directory: `dist`.
-3. Settings → Variables and Secrets:
-   - `RESEND_API_KEY` (Secret);
-   - `CONTACT_TO_EMAIL` — куда приходят письма;
-   - `CONTACT_FROM_EMAIL` — например `Elakoo website <no-reply@elakoo.com>` (домен должен быть подтверждён в Resend);
-   - `NODE_VERSION` = `22`.
-4. Custom domains → добавить `elakoo.com` (и `www.elakoo.com`).
-5. Необязательно: защита формы от частых отправок (5 писем в час с одного IP). Создайте KV namespace и привяжите его в Settings → Bindings под именем `RATE_LIMIT`.
+### Форма обратной связи (Resend)
+1. Зарегистрируйтесь на resend.com → Domains → добавьте `elakoo.com` и DNS-записи, которые покажет Resend.
+2. API Keys → создайте ключ.
+3. Добавьте GitHub-секреты: `RESEND_API_KEY`, `CONTACT_TO_EMAIL` (куда приходят письма), `CONTACT_FROM_EMAIL` (например `Elakoo website <no-reply@elakoo.com>`).
+4. Запустите **Deploy to server**: ключи запишутся на сервер в `/etc/elakoo/contact.env`.
 
-### 4. Resend (отправка писем формы)
-Зарегистрируйтесь на resend.com → Domains → добавьте `elakoo.com` и DNS-записи, которые покажет Resend (их можно добавить в Cloudflare DNS) → API Keys → создайте ключ и вставьте в `RESEND_API_KEY`.
+Пока ключей нет, форма честно отвечает «not available right now», а не делает вид, что письмо отправлено.
 
 ### 5. Первая синхронизация
-GitHub → Actions → **Sync YouTube catalog** → Run workflow. Через 1–2 минуты в `data/catalog.json` появятся видео, и Cloudflare сам опубликует обновлённый сайт.
+GitHub → Actions → **Sync YouTube catalog** → Run workflow. Через 1–2 минуты в `data/catalog.json` появятся видео, и сайт сам опубликуется на сервере.
 
 ## Публикация новых видео (каждый раз)
 
@@ -80,6 +98,8 @@ GitHub → Actions → **Sync YouTube catalog** → Run workflow. Через 1�
 - Если YouTube API недоступен или вернул ошибку, `data/catalog.json` не меняется, и сайт продолжает показывать последний удачный каталог. Ошибка видна в GitHub → Actions (красный значок; GitHub также присылает письмо).
 - Если API вдруг вернул 0 видео, а раньше они были, синхронизация останавливается. Если плейлисты действительно опустели, запустите её вручную с галочкой `force`.
 - Ключ API хранится только в GitHub Secrets и в браузер не попадает.
+- На сервере GitHub заходит под отдельным пользователем `deploy` по SSH-ключу. Этот пользователь может только класть файлы сайта и перезапускать службу формы.
+- nginx ограничивает частоту отправки формы. Дополнительно сервер формы пропускает не больше 5 писем в час с одного IP.
 
 ## Локальная разработка
 ```bash
@@ -94,10 +114,12 @@ YOUTUBE_API_KEY=... npm run sync   # синхронизация вручную
 - Лишние кнопки не показываются: кнопки YouTube и ссылки на плейлисты скрыты, пока не заданы реальные ID.
 - Плеер YouTube (youtube-nocookie.com) загружается только после нажатия Play.
 - Метрики не подключены. У ссылок есть атрибуты `data-track` (open-video, open-youtube, choose-section и т. п.), чтобы позже подключить, например, Cloudflare Web Analytics или Plausible без правки разметки.
-- Turnstile (капча) на сервере поддерживается через `TURNSTILE_SECRET_KEY`, но виджет в форму не добавлен. Не задавайте эту переменную, пока не добавлен виджет: без него форма перестанет отправляться.
+- Turnstile (капча) в коде формы поддерживается через `TURNSTILE_SECRET_KEY`, но виджет в форму не добавлен. Не задавайте эту переменную, пока не добавлен виджет: без него форма перестанет отправляться.
+- Код формы совместим и с Cloudflare Pages Functions, если когда-нибудь решите переехать.
 
 ## Что нужно от владельца
-- [ ] Ссылка на канал и 8 ID плейлистов (+ ID All Shorts).
+- [x] Ссылка на канал: https://www.youtube.com/@elakoogreek
+- [ ] 8 ID плейлистов (+ ID All Shorts).
 - [ ] Логотип (SVG) и фирменные цвета — сейчас стоят временный текстовый логотип и синий `#1f5fc9`.
 - [ ] Текст About (сейчас — нейтральный черновик в `src/pages/about/index.astro` и на главной).
 - [ ] Email для писем формы и privacy-контакт (дописать в `src/pages/privacy/index.astro`).

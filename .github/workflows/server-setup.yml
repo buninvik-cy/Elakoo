@@ -1,0 +1,33 @@
+name: Server setup (one time)
+
+# Prepares the server: nginx, Node.js, HTTPS, firewall, contact service, deploy user.
+# Needs repository secrets SERVER_HOST and SERVER_ROOT_PASSWORD.
+# Safe to run again (for example after DNS starts pointing to the server, to get HTTPS).
+on:
+  workflow_dispatch:
+    inputs:
+      cert_email:
+        description: 'Email for HTTPS certificate notices (optional)'
+        required: false
+        default: ''
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install sshpass
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq sshpass
+      - name: Upload setup files and run
+        env:
+          HOST: ${{ secrets.SERVER_HOST }}
+          SSHPASS: ${{ secrets.SERVER_ROOT_PASSWORD }}
+          CERT_EMAIL: ${{ inputs.cert_email }}
+        run: |
+          test -n "$HOST" || { echo "Secret SERVER_HOST is missing"; exit 1; }
+          test -n "$SSHPASS" || { echo "Secret SERVER_ROOT_PASSWORD is missing"; exit 1; }
+          SSH_OPTS="-o StrictHostKeyChecking=accept-new -o PreferredAuthentications=password -o PubkeyAuthentication=no"
+          tar czf /tmp/setup.tgz deploy server functions package.json
+          sshpass -e scp $SSH_OPTS /tmp/setup.tgz root@"$HOST":/root/elakoo-setup.tgz
+          sshpass -e ssh $SSH_OPTS root@"$HOST" \
+            "rm -rf /root/elakoo-setup && mkdir -p /root/elakoo-setup && tar xzf /root/elakoo-setup.tgz -C /root/elakoo-setup && DOMAIN=elakoo.com CERT_EMAIL='$CERT_EMAIL' bash /root/elakoo-setup/deploy/server-setup.sh"
