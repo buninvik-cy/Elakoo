@@ -12,7 +12,7 @@ interface Props {
   noindex?: boolean;
 }
 const { title, description = 'Free A2 & B1 Greek exam video practice. Watch here or on YouTube.', noindex = false } = Astro.props;
-const fullTitle = title === 'ELAKOO' ? 'ELAKOO - Greek exam video practice (A2 & B1)' : `${title} | ELAKOO`;
+const fullTitle = title === 'ELAKOO' ? 'Elakoo! – Learn Greek the fun way · Greek exam practice' : `${title} | Elakoo!`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = new URL('/og-image.png', Astro.site);
 ---
@@ -26,7 +26,7 @@ const ogImage = new URL('/og-image.png', Astro.site);
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex" />}
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="ELAKOO" />
+    <meta property="og:site_name" content="Elakoo!" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />

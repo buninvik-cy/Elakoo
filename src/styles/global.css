@@ -442,3 +442,4 @@ a { color: var(--blue); }
 .about-bg { object-position: 60% 100%; }
 .about-chars { bottom: clamp(6px, 1.6vw, 22px); isolation: isolate; }
 .stand::after { bottom: -5px; height: clamp(10px, 1.4vw, 18px); }
+.slogan { margin: 0 0 2px; display: inline-block; background: #eaf1fb; color: var(--blue); font-weight: 800; font-size: clamp(.95rem, 1.8vw, 1.1rem); padding: 7px 16px; border-radius: 999px; }
