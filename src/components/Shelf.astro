@@ -25,5 +25,5 @@ const count = videos.length;
     ? <div class:list={['shelf-row', { 'is-shorts': isShorts }]} role="region" aria-label={`${s.levelLabel} ${s.sectionLabel}`} tabindex="0">
         {items.map((item) => <VideoCard item={item} context={{ level: s.level, section: s.section }} showLabels={false} />)}
       </div>
-    : <Soon text={shorts.length ? "Full videos are coming soon. Watch the Shorts above!" : "New videos are coming soon."} />}
+    : <Soon level={s.level} text={shorts.length ? "Full videos are coming soon. Watch the Shorts above!" : "New videos are coming soon."} />}
 </section>

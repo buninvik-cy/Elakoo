@@ -46,7 +46,7 @@ const levelList = LEVELS.map((l) => l.label).join(', ').replace(/, ([^,]*)$/, ' 
       {levels.map((l) => (
         <div class="level-panel" data-lv={l.slug} id={`panel-${l.slug}`} role="tabpanel" aria-labelledby={`tab-${l.slug}`} data-level-panel={l.slug}>
           <h2 class="sr-only">Level {l.label}</h2>
-          {!l.live.length && <Soon text={`${l.label} videos are coming soon. Meanwhile, try the other levels!`} />}
+          {!l.live.length && <Soon level={l.slug} text={`${l.label} videos are coming soon. Meanwhile, try the other levels!`} />}
 
           {l.shorts.length > 0 && (
             <section class="shelf" aria-labelledby={`shorts-${l.slug}`}>

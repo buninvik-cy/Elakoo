@@ -16,6 +16,12 @@ const HEX = /^#[0-9a-f]{6}$/i;
 // Optional level colour (e.g. from the textbook covers); falls back to the brand blue.
 export const LEVELS = (config.levels || []).map(({ slug, label, color }) => ({ slug, label, color: HEX.test(color || '') ? color : null }));
 export const levelColor = (slug) => LEVELS.find((l) => l.slug === slug)?.color || null;
+const GUIDES = ['maria', 'nikos', 'teacher'];
+/** Character shown in this level's empty states (config levels[].guide). */
+export const levelGuide = (slug) => {
+  const g = (config.levels || []).find((l) => l.slug === slug)?.guide;
+  return GUIDES.includes(g) ? g : 'maria';
+};
 
 /** Every configured playlist ("section"), with or without an ID. */
 export const ALL_SECTIONS = (config.levels || []).flatMap((level) =>

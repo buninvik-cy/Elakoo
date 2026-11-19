@@ -46,7 +46,7 @@ const siblings = ALL_SECTIONS.filter((x) => x.level === s.level);
       <div class="shelf-head"><h2 id="sh-h">Shorts <span class="muted">Quick practice</span></h2></div>
       {shorts.length
         ? <ShortsRow items={shorts} context={context} expandable showLabels={false} label={`${s.levelLabel} ${s.sectionLabel} Shorts`} />
-        : <Soon text="Shorts are coming soon." who="nikos" />}
+        : <Soon level={s.level} text="Shorts are coming soon." />}
     </section>
     <section class="block" aria-labelledby="fv-h">
       <div class="shelf-head"><h2 id="fv-h">Full videos</h2></div>
@@ -55,7 +55,7 @@ const siblings = ALL_SECTIONS.filter((x) => x.level === s.level);
           <div class="grid-videos">{videos.map((item) => <VideoCard item={item} context={context} showLabels={false} />)}</div>
           {videos.length > PAGE && <button type="button" class="btn btn-ghost load-more" data-load-more>Load more</button>}
         </div>
-      ) : <Soon text="New videos are coming soon." />}
+      ) : <Soon level={s.level} text="New videos are coming soon." />}
     </section>
   </div>
   </div>

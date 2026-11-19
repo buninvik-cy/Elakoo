@@ -61,7 +61,8 @@
           "group": "practice",
           "playlistId": null
         }
-      ]
+      ],
+      "guide": "maria"
     },
     {
       "slug": "a2",
@@ -110,7 +111,8 @@
           "group": "practice",
           "playlistId": null
         }
-      ]
+      ],
+      "guide": "maria"
     },
     {
       "slug": "b1",
@@ -159,7 +161,8 @@
           "group": "practice",
           "playlistId": null
         }
-      ]
+      ],
+      "guide": "nikos"
     }
   ],
   "shortsIndexPlaylistId": "PLG68FubLsBFc",
