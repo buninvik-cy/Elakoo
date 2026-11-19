@@ -20,7 +20,9 @@ const levels = LEVELS.map((l) => {
     shorts: levelItems(l.slug, 'short').slice(0, 16),
   };
 });
-const defaultLevel = (levels.find((l) => l.live.length) || levels[0])?.slug;
+import { config } from '../lib/sections.mjs';
+// Default tab: config.defaultLevel (A2), else the first level with videos. A visitor's last choice wins (see script).
+const defaultLevel = (levels.find((l) => l.slug === config.defaultLevel) || levels.find((l) => l.live.length) || levels[0])?.slug;
 const levelList = LEVELS.map((l) => l.label).join(', ').replace(/, ([^,]*)$/, ' and $1');
 ---
 <Base title="ELAKOO" description={`Free ${levelList} Greek exam video practice: speaking, writing, listening, stories and vocabulary. Watch here or on YouTube.`}>

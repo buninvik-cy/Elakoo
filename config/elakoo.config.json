@@ -1,6 +1,7 @@
 {
   "siteUrl": "https://elakoo.com",
   "channelUrl": "https://www.youtube.com/@elakoogreek",
+  "defaultLevel": "a2",
   "groups": [
     {
       "slug": "exam",
