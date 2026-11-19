@@ -432,3 +432,13 @@ a { color: var(--blue); }
   .skyline { height: 116px; }
   .char-phone { height: 108px; right: 10px; }
 }
+/* About: characters stand on the pavement (lower part of the picture) with a ground shadow */
+.about-chars { bottom: clamp(10px, 3.2vw, 44px); }
+.about-chars img { filter: none; display: block; }
+.stand { position: relative; display: block; }
+.stand::after { content: ''; position: absolute; left: 50%; bottom: -6px; width: 78%; height: 16px; transform: translateX(-50%); background: radial-gradient(ellipse at center, rgba(40,40,60,.38) 0%, rgba(40,40,60,0) 70%); z-index: -1; }
+.about-card { margin-top: clamp(20px, 3vw, 32px); }
+/* About fix: always show the pavement (bottom of the picture) and stand on it */
+.about-bg { object-position: 60% 100%; }
+.about-chars { bottom: clamp(6px, 1.6vw, 22px); isolation: isolate; }
+.stand::after { bottom: -5px; height: clamp(10px, 1.4vw, 18px); }
