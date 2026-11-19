@@ -443,3 +443,8 @@ a { color: var(--blue); }
 .about-chars { bottom: clamp(6px, 1.6vw, 22px); isolation: isolate; }
 .stand::after { bottom: -5px; height: clamp(10px, 1.4vw, 18px); }
 .slogan { margin: 0 0 2px; display: inline-block; background: #eaf1fb; color: var(--blue); font-weight: 800; font-size: clamp(.95rem, 1.8vw, 1.1rem); padding: 7px 16px; border-radius: 999px; }
+/* Greek falls back to Manrope (Nunito has no Greek glyphs) */
+:root { --font: 'Nunito Variable', 'Manrope Variable', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; }
+.ela { margin: 0; color: var(--blue); font-family: 'Manrope Variable', var(--font); font-weight: 800; font-size: clamp(1.6rem, 3.6vw, 2.4rem); letter-spacing: -.01em; line-height: 1.1; }
+.ela-sm { font-size: clamp(1.2rem, 2.6vw, 1.6rem); }
+.hero .slogan { margin-top: 4px; }

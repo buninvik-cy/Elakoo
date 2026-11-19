@@ -25,8 +25,9 @@ const levelList = LEVELS.map((l) => l.label).join(', ').replace(/, ([^,]*)$/, ' 
 <Base title="ELAKOO" description={`Free ${levelList} Greek exam video practice: speaking, writing, listening, stories and vocabulary. Watch here or on YouTube.`}>
   <section class="hero" id="levels" data-levels data-default={defaultLevel}>
     <div class="container hero-inner">
-      <p class="slogan">Learn Greek the fun way</p>
+      <p class="ela" lang="el">Έλα, άκου!</p>
       <h1>Greek exam. <span class="hero-accent">Ready!</span></h1>
+      <p class="slogan">Learn Greek the fun way</p>
       <p class="lead">Free video practice for {levelList}. Watch here or on YouTube.</p>
       <div class="level-capsule" role="tablist" aria-label="Level">
         {levels.map((l) => (
@@ -72,6 +73,7 @@ const levelList = LEVELS.map((l) => l.label).join(', ').replace(/, ([^,]*)$/, ' 
   {channelUrl && (
     <section class="cta">
       <div class="container cta-inner">
+        <p class="ela ela-sm" lang="el">Έλα, άκου!</p>
         <h2>Don’t miss new videos.</h2>
         <a class="btn btn-primary" href={channelUrl} target="_blank" rel="noopener noreferrer" data-track="youtube-channel">Subscribe on YouTube</a>
       </div>
