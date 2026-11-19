@@ -9,15 +9,19 @@ export function parseDuration(iso) {
   return (Number(d || 0) * 86400) + (Number(h || 0) * 3600) + (Number(min || 0) * 60) + Math.round(Number(s || 0));
 }
 
+export const SHORT_MAX_SECONDS = 180;
+
 /**
  * Decide the format of a video.
- * Priority: formatOverrides > Shorts-index membership > 'video' (only when an index exists).
- * Without an index and without an override the format is 'unknown' (needs classification).
+ * Priority: formatOverrides > Shorts-index playlist > YouTube's /shorts/ check (detected)
+ *           > duration (<= 3 min = Short) > 'unknown'.
  */
-export function classify(youtubeId, { formatOverrides = {}, shortsIndexIds = null }) {
+export function classify(youtubeId, { formatOverrides = {}, shortsIndexIds = null, detected = {}, durationSeconds = null }) {
   const override = formatOverrides[youtubeId];
   if (override === 'short' || override === 'video') return override;
   if (shortsIndexIds) return shortsIndexIds.has(youtubeId) ? 'short' : 'video';
+  if (detected[youtubeId] === 'short' || detected[youtubeId] === 'video') return detected[youtubeId];
+  if (durationSeconds != null) return durationSeconds <= SHORT_MAX_SECONDS ? 'short' : 'video';
   return 'unknown';
 }
 
@@ -44,7 +48,7 @@ export function splitSectionKey(key) {
  * @param {object} args.config
  * @param {string} args.now ISO timestamp
  */
-export function buildCatalog({ playlistItems, sectionPlaylists, shortsIndexIds, videos, config, now }) {
+export function buildCatalog({ playlistItems, sectionPlaylists, shortsIndexIds, videos, config, now, detected = {} }) {
   const byId = new Map();
 
   for (const [key, entries] of Object.entries(playlistItems)) {
@@ -62,7 +66,10 @@ export function buildCatalog({ playlistItems, sectionPlaylists, shortsIndexIds, 
           thumbnail: bestThumbnail(sn.thumbnails),
           publishedAt: sn.publishedAt || null,
           durationSeconds: parseDuration(v.contentDetails?.duration),
-          format: classify(entry.videoId, { formatOverrides: config.formatOverrides || {}, shortsIndexIds }),
+          format: classify(entry.videoId, {
+            formatOverrides: config.formatOverrides || {}, shortsIndexIds, detected,
+            durationSeconds: parseDuration(v.contentDetails?.duration),
+          }),
           memberships: [],
           isEmbeddable: v.status?.embeddable !== false,
           youtubeUrl: `https://www.youtube.com/watch?v=${entry.videoId}`,

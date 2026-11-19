@@ -17,6 +17,14 @@ test('parseDuration', () => {
   assert.equal(parseDuration('bad'), null);
 });
 
+test('classify without index: detected > duration', () => {
+  assert.equal(classify('a', { detected: { a: 'short' }, durationSeconds: 900 }), 'short');
+  assert.equal(classify('a', { detected: { a: 'video' }, durationSeconds: 30 }), 'video');
+  assert.equal(classify('a', { detected: { a: null }, durationSeconds: 45 }), 'short');
+  assert.equal(classify('a', { durationSeconds: 600 }), 'video');
+  assert.equal(classify('a', { formatOverrides: { a: 'video' }, detected: { a: 'short' } }), 'video');
+});
+
 test('classify priority: override > index > video; no index -> unknown', () => {
   const idx = new Set(['s1']);
   assert.equal(classify('s1', { shortsIndexIds: idx }), 'short');
@@ -47,12 +55,12 @@ test('buildCatalog: memberships, dedupe, index-only excluded, sort by publishedA
   assert.equal(cat.needsClassification.length, 0);
 });
 
-test('buildCatalog without index: unknown goes to needsClassification', () => {
+test('buildCatalog without index: no duration and no detection -> needsClassification', () => {
   const cat = buildCatalog({
     playlistItems: { 'a2-writing': [{ videoId: 'a', position: 0 }, { videoId: 'b', position: 1 }] },
     sectionPlaylists: { 'a2-writing': 'PL' },
     shortsIndexIds: null,
-    videos: { a: v('a', '2026-01-01T00:00:00Z'), b: v('b', '2026-01-02T00:00:00Z') },
+    videos: { a: v('a', '2026-01-01T00:00:00Z'), b: v('b', '2026-01-02T00:00:00Z', null) },
     config: { formatOverrides: { a: 'short' } },
     now: 'x',
   });

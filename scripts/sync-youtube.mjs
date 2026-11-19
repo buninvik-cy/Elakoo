@@ -54,6 +54,25 @@ async function fetchPlaylist(playlistId, key) {
   return out;
 }
 
+/**
+ * Is this a Short? youtube.com/shorts/ID answers 200 for a Short and redirects to /watch for a normal video.
+ * Anything else (consent page, network error) -> null, and the duration rule decides.
+ */
+async function detectShort(id) {
+  try {
+    const res = await fetch(`https://www.youtube.com/shorts/${encodeURIComponent(id)}`, {
+      method: 'HEAD',
+      redirect: 'manual',
+      headers: { Cookie: 'CONSENT=YES+1; SOCS=CAI', 'User-Agent': 'Mozilla/5.0 (elakoo-sync)' },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (res.status === 200) return 'short';
+    const loc = res.headers.get('location') || '';
+    if (res.status >= 300 && res.status < 400 && loc.includes('/watch')) return 'video';
+  } catch { /* fall through */ }
+  return null;
+}
+
 /** videos.list in batches of 50. */
 async function fetchVideos(ids, key) {
   const out = {};
@@ -98,15 +117,28 @@ async function main() {
     shortsIndexIds = new Set(idx.map((i) => i.videoId));
     log(`Shorts index: ${shortsIndexIds.size} items`);
   } else {
-    log('No Shorts index playlist: using formatOverrides; unlabelled videos go to "needs classification".');
+    log('No Shorts index playlist: detecting Shorts via youtube.com/shorts/ (fallback: duration <= 3 min).');
   }
 
   const allIds = Object.values(playlistItems).flat().map((i) => i.videoId);
   const videos = await fetchVideos(allIds, key);
 
+  // Without an index, ask YouTube per video. Earlier answers are reused from the previous catalog.
+  const detected = {};
+  if (!shortsIndexIds) {
+    const known = new Map((previous.items || []).filter((i) => i.formatSource === 'detected').map((i) => [i.youtubeId, i.format]));
+    for (const id of Object.keys(videos)) {
+      if (config.formatOverrides?.[id]) continue;
+      detected[id] = known.get(id) || await detectShort(id);
+    }
+  }
+
   const catalog = buildCatalog({
-    playlistItems, sectionPlaylists, shortsIndexIds, videos, config, now: new Date().toISOString(),
+    playlistItems, sectionPlaylists, shortsIndexIds, videos, config, detected, now: new Date().toISOString(),
   });
+  for (const item of catalog.items) {
+    if (detected[item.youtubeId] === item.format) item.formatSource = 'detected';
+  }
 
   if (catalog.items.length === 0 && (previous.items || []).length > 0 && !FORCE) {
     throw new Error('Sync returned 0 videos but the previous catalog had some. Keeping the previous catalog. Run with --force if this is intended.');
