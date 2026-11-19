@@ -1,0 +1,9 @@
+---
+// Friendly empty state: one of the channel's characters says the message.
+interface Props { text: string; who?: 'maria' | 'nikos' | 'teacher' }
+const { text, who = 'maria' } = Astro.props;
+---
+<div class="soon">
+  <img src={`/brand/chars/${who}-av.webp`} alt="" width="72" height="72" loading="lazy" decoding="async" />
+  <p>{text}</p>
+</div>

@@ -2,11 +2,14 @@
 import Base from '../layouts/Base.astro';
 ---
 <Base title="Page not found" noindex>
-  <div class="container narrow">
-    <header class="page-head">
-      <h1>Page not found</h1>
-      <p class="lead">This page does not exist. Try the video catalogue instead.</p>
-      <p><a class="btn btn-primary" href="/videos/">All videos</a> <a class="btn btn-ghost" href="/">Home</a></p>
-    </header>
+  <div class="band page-band">
+    <div class="container narrow notfound">
+      <img src="/brand/chars/teacher.webp" alt="" width="387" height="720" decoding="async" />
+      <div>
+        <h1>Page not found</h1>
+        <p class="lead">This page does not exist. Let’s go back to practice.</p>
+        <p class="actions"><a class="btn btn-primary" href="/">Choose your level</a> <a class="btn btn-ghost" href="/videos/">All videos</a></p>
+      </div>
+    </div>
   </div>
 </Base>

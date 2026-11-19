@@ -383,3 +383,52 @@ a { color: var(--blue); }
 .band-stack .player { margin: 0; }
 .page-head { margin-bottom: 18px; }
 .lv-badge { border-radius: 14px; padding: 0 .3em; }
+
+/* ---- Characters ---- */
+.hero { isolation: isolate; }
+.hero-chars { position: absolute; inset: 0; pointer-events: none; z-index: 1; max-width: 1320px; margin: 0 auto; }
+.char { position: absolute; bottom: clamp(18px, 3vw, 40px); height: auto; filter: drop-shadow(0 6px 10px rgba(0,0,0,.12)); }
+.char-left { left: max(8px, 2vw); width: clamp(150px, 15vw, 210px); }
+.char-right { right: max(12px, 3vw); width: clamp(112px, 11vw, 156px); }
+.char-phone { display: none; }
+.hero-inner { position: relative; z-index: 2; }
+.skyline { position: relative; z-index: 0; }
+/* Not enough room beside the title: hide the pair, show Nikos small next to the skyline */
+@media (max-width: 1000px) {
+  .char-left, .char-right { display: none; }
+  .char-phone { display: block; right: 12px; bottom: 6px; width: 74px; }
+}
+@media (max-width: 560px) { .char-phone { width: 60px; } }
+
+.soon { display: flex; align-items: center; gap: 16px; background: #fff; border-radius: var(--radius); padding: 16px 20px; box-shadow: 0 2px 14px rgba(0,0,0,.05); }
+.soon img { width: 64px; height: 64px; border-radius: 50%; flex: none; }
+.soon p { margin: 0; font-weight: 700; font-size: 1.05rem; }
+
+.page-band { padding-top: clamp(24px, 4vw, 44px); min-height: 50vh; }
+
+.about-hero { position: relative; overflow: hidden; background: #dfeaf7; }
+.about-bg { display: block; width: 100%; height: clamp(220px, 38vw, 460px); object-fit: cover; object-position: 70% 50%; }
+.about-chars { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; align-items: flex-end; gap: clamp(4px, 3vw, 40px); padding: 0 16px; }
+.about-chars img { height: clamp(150px, 30vw, 380px); width: auto; filter: drop-shadow(0 6px 12px rgba(0,0,0,.18)); }
+.about-card { margin-top: clamp(-60px, -5vw, -24px); position: relative; }
+.about-card h1 { margin-top: 0; font-weight: 900; }
+
+.contact-layout { display: flex; gap: 28px; align-items: flex-end; }
+.contact-main { flex: 1; min-width: 0; max-width: 760px; }
+.contact-char { width: 190px; height: auto; flex: none; filter: drop-shadow(0 6px 12px rgba(0,0,0,.14)); }
+@media (max-width: 860px) { .contact-char { display: none; } }
+
+.notfound { display: flex; align-items: center; gap: 28px; }
+.notfound img { width: clamp(110px, 20vw, 190px); height: auto; flex: none; }
+.notfound h1 { font-weight: 900; margin: 0 0 6px; }
+.notfound .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+@media (max-width: 520px) { .notfound { flex-direction: column; text-align: center; } .notfound .actions { justify-content: center; } }
+/* Phone/tablet: Nikos stands inside the skyline strip, never over the title or capsule */
+@media (max-width: 1000px) {
+  .skyline { height: 140px; background-size: auto 100%; }
+  .char-phone { width: auto; height: 128px; right: 16px; bottom: 4px; }
+}
+@media (max-width: 560px) {
+  .skyline { height: 116px; }
+  .char-phone { height: 108px; right: 10px; }
+}

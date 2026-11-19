@@ -1,21 +1,37 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { channelUrl } from '../../lib/data.mjs';
+import { LEVELS } from '../../lib/sections.mjs';
+const levelList = LEVELS.map((l) => l.label).join(', ').replace(/, ([^,]*)$/, ' and $1');
 ---
-<Base title="About" description="Elakoo is a free collection of Greek A2 and B1 exam video practice.">
-  <div class="container narrow">
-    <header class="page-head">
-      <h1>About Elakoo</h1>
-    </header>
-    <div class="prose">
-      <p>Elakoo is a free collection of video practice for the Greek language exam at levels A2 and B1.</p>
-      <p>Every video is organised by exam section: Speaking Part 1, Speaking Part 2, Speaking Part 3 and Writing. Full videos and short vertical Shorts are shown separately, so you can choose a longer practice session or a quick review.</p>
-      <p>All videos are published on our YouTube channel. You can watch them here on the site or open them on YouTube.</p>
-      <p class="actions">
-        <a class="btn btn-primary" href="/videos/">Explore videos</a>
-        {channelUrl && <a class="btn btn-ghost" href={channelUrl} target="_blank" rel="noopener noreferrer">YouTube channel ↗</a>}
-        <a class="btn btn-ghost" href="/contact/">Contact us</a>
-      </p>
+<Base title="About" description={`Elakoo is a free collection of Greek exam video practice for ${levelList}.`}>
+  <section class="about-hero">
+    <picture>
+      <source media="(max-width: 700px)" srcset="/brand/chars/hero-bg-960.webp" />
+      <img class="about-bg" src="/brand/chars/hero-bg.webp" alt="" width="1920" height="1080" decoding="async" />
+    </picture>
+    <div class="about-chars" aria-hidden="true">
+      <img src="/brand/chars/teacher.webp" alt="" width="387" height="720" />
+      <img src="/brand/chars/nikos.webp" alt="" width="295" height="720" />
+      <img src="/brand/chars/maria.webp" alt="" width="288" height="720" />
+    </div>
+  </section>
+
+  <div class="band">
+    <div class="container narrow">
+      <div class="panel about-card">
+        <h1>About Elakoo</h1>
+        <div class="prose">
+          <p>Elakoo is a free collection of videos to prepare for the Greek language exam at levels {levelList}.</p>
+          <p>Videos are organised by level and exam section: Speaking Part 1, Speaking Part 2, Speaking Part 3 and Writing, plus extra practice with listening, stories and words by topic. Full videos and short vertical Shorts are shown separately, so you can choose a longer practice session or a quick review.</p>
+          <p>All videos are published on our YouTube channel. You can watch them here on the site or open them on YouTube.</p>
+          <p class="actions">
+            <a class="btn btn-primary" href="/">Choose your level</a>
+            {channelUrl && <a class="btn btn-ghost" href={channelUrl} target="_blank" rel="noopener noreferrer">YouTube channel ↗</a>}
+            <a class="btn btn-ghost" href="/contact/">Contact us</a>
+          </p>
+        </div>
+      </div>
     </div>
   </div>
 </Base>

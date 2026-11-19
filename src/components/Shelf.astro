@@ -1,6 +1,7 @@
 ---
 // One horizontal "shelf" of a playlist (E1 style): title, See all, YouTube, then a scrollable row of cards.
 import VideoCard from './VideoCard.astro';
+import Soon from './Soon.astro';
 import { sectionItems, playlistUrl } from '../lib/data.mjs';
 interface Props { s: any; max?: number }
 const { s, max = 10 } = Astro.props;
@@ -24,5 +25,5 @@ const count = videos.length + shorts.length;
     ? <div class:list={['shelf-row', { 'is-shorts': isShorts }]} role="region" aria-label={`${s.levelLabel} ${s.sectionLabel}`} tabindex="0">
         {items.map((item) => <VideoCard item={item} context={{ level: s.level, section: s.section }} showLabels={false} />)}
       </div>
-    : <p class="shelf-empty">New videos are coming soon.</p>}
+    : <Soon text="New videos are coming soon." />}
 </section>

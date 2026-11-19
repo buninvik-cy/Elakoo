@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import ShortsRow from '../components/ShortsRow.astro';
 import Shelf from '../components/Shelf.astro';
+import Soon from '../components/Soon.astro';
 import { LEVELS, GROUPS, ALL_SECTIONS } from '../lib/sections.mjs';
 import { levelItems, channelUrl } from '../lib/data.mjs';
 
@@ -32,6 +33,11 @@ const levelList = LEVELS.map((l) => l.label).join(', ').replace(/, ([^,]*)$/, ' 
         ))}
       </div>
     </div>
+    <div class="hero-chars" aria-hidden="true">
+      <img class="char char-left" src="/brand/chars/teacher.webp" alt="" width="387" height="720" decoding="async" fetchpriority="low" />
+      <img class="char char-right" src="/brand/chars/maria.webp" alt="" width="288" height="720" decoding="async" fetchpriority="low" />
+      <img class="char char-phone" src="/brand/chars/nikos.webp" alt="" width="295" height="720" decoding="async" fetchpriority="low" />
+    </div>
     <div class="skyline" aria-hidden="true"></div>
   </section>
 
@@ -40,7 +46,7 @@ const levelList = LEVELS.map((l) => l.label).join(', ').replace(/, ([^,]*)$/, ' 
       {levels.map((l) => (
         <div class="level-panel" data-lv={l.slug} id={`panel-${l.slug}`} role="tabpanel" aria-labelledby={`tab-${l.slug}`} data-level-panel={l.slug}>
           <h2 class="sr-only">Level {l.label}</h2>
-          {!l.live.length && <p class="empty">{l.label} videos are coming soon. Meanwhile, try the other levels.</p>}
+          {!l.live.length && <Soon text={`${l.label} videos are coming soon. Meanwhile, try the other levels!`} />}
 
           {l.shorts.length > 0 && (
             <section class="shelf" aria-labelledby={`shorts-${l.slug}`}>

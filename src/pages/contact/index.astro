@@ -3,15 +3,20 @@ import Base from '../../layouts/Base.astro';
 import ContactForm from '../../components/ContactForm.astro';
 ---
 <Base title="Contact" description="Send a question, suggest a video or report a problem to Elakoo.">
-  <div class="container narrow">
-    <header class="page-head">
-      <h1>Contact</h1>
-      <p class="lead">Have a question, an idea for a video or found a problem? Write to us.</p>
-    </header>
-    <p class="notice ok" data-status="sent" hidden>Thank you! Your message has been sent.</p>
-    <p class="notice error" data-status="error" hidden>Sorry, the message could not be sent. Please try again.</p>
-    <div class="panel">
-      <ContactForm />
+  <div class="band page-band">
+    <div class="container contact-layout">
+      <div class="contact-main">
+        <header class="page-head">
+          <h1>Contact</h1>
+          <p class="lead">Have a question, an idea for a video or found a problem? Write to us.</p>
+        </header>
+        <p class="notice ok" data-status="sent" hidden>Thank you! Your message has been sent.</p>
+        <p class="notice error" data-status="error" hidden>Sorry, the message could not be sent. Please try again.</p>
+        <div class="panel">
+          <ContactForm />
+        </div>
+      </div>
+      <img class="contact-char" src="/brand/chars/nikos.webp" alt="" width="295" height="720" loading="lazy" decoding="async" />
     </div>
   </div>
 </Base>

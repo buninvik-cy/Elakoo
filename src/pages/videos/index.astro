@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import VideoCard from '../../components/VideoCard.astro';
+import Soon from '../../components/Soon.astro';
 import { LEVELS, SECTION_TYPES, SECTIONS } from '../../lib/sections.mjs';
 const liveTypes = new Set(SECTIONS.map((s) => s.section));
 const sectionOptions = SECTION_TYPES.filter((t) => liveTypes.size === 0 || liveTypes.has(t.slug));
@@ -48,7 +49,7 @@ const shorts = allOfFormat('short');
     <section id="panel-video" role="tabpanel" aria-labelledby="tab-video" data-panel="video">
       {videos.length
         ? <div class="grid-videos" data-grid>{videos.map((item) => <VideoCard item={item} />)}</div>
-        : <p class="empty">New videos are coming soon.</p>}
+        : <Soon text="New videos are coming soon." />}
       <p class="empty" data-no-results hidden>No videos match these filters.</p>
       <button type="button" class="btn btn-ghost load-more" data-load-more hidden>Load more</button>
     </section>
@@ -56,7 +57,7 @@ const shorts = allOfFormat('short');
     <section id="panel-short" role="tabpanel" aria-labelledby="tab-short" data-panel="short" hidden>
       {shorts.length
         ? <div class="grid-shorts" data-grid>{shorts.map((item) => <VideoCard item={item} />)}</div>
-        : <p class="empty">Shorts are coming soon.</p>}
+        : <Soon text="Shorts are coming soon." who="nikos" />}
       <p class="empty" data-no-results hidden>No Shorts match these filters.</p>
       <button type="button" class="btn btn-ghost load-more" data-load-more hidden>Load more</button>
     </section>
