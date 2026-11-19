@@ -23,13 +23,14 @@ command -v apt-get >/dev/null || { echo "This installer supports Ubuntu/Debian o
 
 say "Packages"
 export DEBIAN_FRONTEND=noninteractive
-apt-get update -qq
-apt-get install -y -qq git nginx rsync curl ca-certificates ufw certbot python3-certbot-nginx dnsutils >/dev/null
+APT_WAIT=(-o DPkg::Lock::Timeout=600)   # wait if Ubuntu auto-updates are running
+apt-get "${APT_WAIT[@]}" update -qq
+apt-get "${APT_WAIT[@]}" install -y -qq git nginx rsync curl ca-certificates ufw certbot python3-certbot-nginx dnsutils >/dev/null
 # The site builder (Astro) needs Node.js >= 22.23.4.
 node_ok() { command -v node >/dev/null && node -e 'const [a,b,c]=process.versions.node.split(".").map(Number); process.exit(a>22||(a===22&&(b>23||(b===23&&c>=4)))?0:1)'; }
 if ! node_ok; then
   curl -fsSL https://deb.nodesource.com/setup_22.x | bash - >/dev/null
-  apt-get install -y -qq nodejs >/dev/null
+  apt-get "${APT_WAIT[@]}" install -y -qq nodejs >/dev/null
   node_ok || { echo "!! Node.js $(node -v 2>/dev/null) is too old, need >= 22.23.4"; exit 1; }
 fi
 echo "node $(node -v), $(nginx -v 2>&1)"
