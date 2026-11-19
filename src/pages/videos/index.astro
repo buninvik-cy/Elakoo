@@ -1,17 +1,19 @@
 ---
 import Base from '../../layouts/Base.astro';
 import VideoCard from '../../components/VideoCard.astro';
-import { LEVELS, SECTION_TYPES } from '../../lib/sections.mjs';
+import { LEVELS, SECTION_TYPES, SECTIONS } from '../../lib/sections.mjs';
+const liveTypes = new Set(SECTIONS.map((s) => s.section));
+const sectionOptions = SECTION_TYPES.filter((t) => liveTypes.size === 0 || liveTypes.has(t.slug));
 import { allOfFormat } from '../../lib/data.mjs';
 
 const videos = allOfFormat('video');
 const shorts = allOfFormat('short');
 ---
-<Base title="All Videos" description="All free Greek A2 and B1 exam practice videos and Shorts from Elakoo, by level and exam section.">
+<Base title="All Videos" description="All free Greek exam practice videos and Shorts from Elakoo, by level and section.">
   <div class="container">
     <header class="page-head">
       <h1>All Videos</h1>
-      <p class="lead">Greek A2 &amp; B1 exam practice. Filter by level and exam section.</p>
+      <p class="lead">Greek exam practice for every level. Filter by level and section.</p>
     </header>
 
     <div class="tabs" role="tablist" aria-label="Format">
@@ -29,7 +31,7 @@ const shorts = allOfFormat('short');
       <label><span>Section</span>
         <select name="section">
           <option value="">All</option>
-          {SECTION_TYPES.map((s) => <option value={s.slug}>{s.label}</option>)}
+          {sectionOptions.map((s) => <option value={s.slug}>{s.label}</option>)}
         </select>
       </label>
       <label><span>Sort</span>

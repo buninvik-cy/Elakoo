@@ -11,7 +11,7 @@ import path from 'node:path';
 import { buildCatalog, sameContent } from './lib/catalog.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const CONFIG_PATH = path.join(ROOT, 'config/elakoo.config.json');
+const CONFIG_PATH = process.env.ELAKOO_CONFIG_PATH || path.join(ROOT, 'config/elakoo.config.json');
 const CATALOG_PATH = process.env.ELAKOO_CATALOG_PATH || path.join(ROOT, 'data/catalog.json');
 const API = 'https://www.googleapis.com/youtube/v3';
 const FORCE = process.argv.includes('--force');
@@ -73,8 +73,11 @@ async function main() {
   const config = JSON.parse(await readFile(CONFIG_PATH, 'utf8'));
   const previous = JSON.parse(await readFile(CATALOG_PATH, 'utf8').catch(() => '{"items":[]}'));
 
+  // sectionKey ('a2-speaking-part-1') -> playlistId, from config.levels[].playlists[]
+  // (old flat "sectionPlaylists" format is still accepted).
+  const fromLevels = (config.levels || []).flatMap((l) => (l.playlists || []).map((p) => [`${l.slug}-${p.slug}`, p.playlistId]));
   const sectionPlaylists = Object.fromEntries(
-    Object.entries(config.sectionPlaylists || {}).filter(([, id]) => isRealId(id)),
+    [...Object.entries(config.sectionPlaylists || {}), ...fromLevels].filter(([, id]) => isRealId(id)),
   );
   if (Object.keys(sectionPlaylists).length === 0) {
     log('No playlist IDs configured in config/elakoo.config.json yet. Nothing to sync; catalog unchanged.');

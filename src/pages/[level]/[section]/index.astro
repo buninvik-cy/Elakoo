@@ -3,7 +3,7 @@ import Base from '../../../layouts/Base.astro';
 import VideoCard from '../../../components/VideoCard.astro';
 import ShortsRow from '../../../components/ShortsRow.astro';
 import Player from '../../../components/Player.astro';
-import { SECTIONS } from '../../../lib/sections.mjs';
+import { SECTIONS, ALL_SECTIONS } from '../../../lib/sections.mjs';
 import { sectionItems, playlistUrl } from '../../../lib/data.mjs';
 
 export function getStaticPaths() {
@@ -16,12 +16,13 @@ const videos = sectionItems(s.level, s.section, 'video');
 const shorts = sectionItems(s.level, s.section, 'short');
 const plUrl = playlistUrl(s.level, s.section);
 const PAGE = 12;
+const siblings = ALL_SECTIONS.filter((x) => x.level === s.level);
 ---
 <Base title={`${s.levelLabel} · ${s.sectionLabel}`} description={`${s.description} Free Greek ${s.levelLabel} exam videos and Shorts.`}>
   <div class="container">
     <nav class="breadcrumb" aria-label="Breadcrumb">
       <a href="/">Home</a> <span aria-hidden="true">/</span>
-      <a href={`/#${s.level}`}>{s.levelLabel}</a> <span aria-hidden="true">/</span>
+      <a href={`/?level=${s.level}#levels`}>{s.levelLabel}</a> <span aria-hidden="true">/</span>
       <span aria-current="page">{s.sectionLabel}</span>
     </nav>
     <header class="page-head">
@@ -30,8 +31,20 @@ const PAGE = 12;
       {plUrl && <a class="btn btn-ghost" href={plUrl} target="_blank" rel="noopener noreferrer" data-track="open-playlist">Open playlist on YouTube ↗</a>}
     </header>
 
+    <nav class="chips" aria-label={`${s.levelLabel} sections`}>
+      {siblings.map((x) => x.playlistId
+        ? <a class:list={['chip', { on: x.key === s.key }]} href={x.path} aria-current={x.key === s.key ? 'page' : undefined}>{x.sectionLabel}</a>
+        : <span class="chip soon" title="Coming soon">{x.sectionLabel}</span>)}
+    </nav>
+
     <Player items={[...videos, ...shorts]} context={context} />
 
+    <section class="block" aria-labelledby="sh-h">
+      <h2 id="sh-h">Shorts · Quick Practice</h2>
+      {shorts.length
+        ? <ShortsRow items={shorts} context={context} expandable showLabels={false} label={`${s.levelLabel} ${s.sectionLabel} Shorts`} />
+        : <p class="empty">Shorts are coming soon.</p>}
+    </section>
     <section class="block" aria-labelledby="fv-h">
       <h2 id="fv-h">Full Videos</h2>
       {videos.length ? (
@@ -42,12 +55,6 @@ const PAGE = 12;
       ) : <p class="empty">New videos are coming soon.</p>}
     </section>
 
-    <section class="block" aria-labelledby="sh-h">
-      <h2 id="sh-h">Shorts · Quick Practice</h2>
-      {shorts.length
-        ? <ShortsRow items={shorts} context={context} expandable showLabels={false} label={`${s.levelLabel} ${s.sectionLabel} Shorts`} />
-        : <p class="empty">Shorts are coming soon.</p>}
-    </section>
   </div>
 </Base>
 <script>

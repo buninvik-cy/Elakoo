@@ -1,8 +1,7 @@
 // Site-side access to the synced catalog and config (read at build time only).
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import config from '../../config/elakoo.config.json';
-import { SECTIONS, findSection } from './sections.mjs';
+import { config, SECTIONS, ALL_SECTIONS, findSection } from './sections.mjs';
 
 // On the server the catalog lives outside the code folder (ELAKOO_CATALOG_PATH),
 // so code updates never overwrite synced data.
@@ -15,14 +14,15 @@ export const siteConfig = config;
 export const channelUrl = isReal(config.channelUrl) ? config.channelUrl : null;
 export const lastSyncedAt = catalog.lastSyncedAt;
 
-/** Only classified items that belong to at least one of the 8 sections. */
-export const items = (catalog.items || []).filter(
-  (i) => (i.format === 'video' || i.format === 'short') && i.memberships?.length,
-);
+/** Only classified items, keeping memberships of sections that are still live in the config. */
+const live = new Set(SECTIONS.map((s) => s.key));
+export const items = (catalog.items || [])
+  .filter((i) => i.format === 'video' || i.format === 'short')
+  .map((i) => ({ ...i, memberships: (i.memberships || []).filter((m) => live.has(`${m.level}-${m.section}`)) }))
+  .filter((i) => i.memberships.length);
 
 export function playlistIdFor(level, section) {
-  const id = config.sectionPlaylists?.[`${level}-${section}`];
-  return isReal(id) ? id : null;
+  return findSection(level, section)?.playlistId || null;
 }
 
 export function playlistUrl(level, section) {
@@ -51,7 +51,9 @@ export function allOfFormat(format) {
 
 /** Where to watch an item on the site: its first section page with ?v= */
 export function watchHref(item, preferred) {
-  const m = (preferred && item.memberships.find((x) => x.level === preferred.level && x.section === preferred.section)) || item.memberships[0];
+  const m = (preferred && item.memberships.find((x) => x.level === preferred.level && (!preferred.section || x.section === preferred.section)))
+    || (preferred && item.memberships.find((x) => x.level === preferred.level))
+    || item.memberships[0];
   return `/${m.level}/${m.section}/?v=${encodeURIComponent(item.youtubeId)}`;
 }
 
@@ -77,4 +79,17 @@ export function compilationShorts(longId) {
   return ids.map((id) => items.find((i) => i.youtubeId === id && i.format === 'short')).filter(Boolean);
 }
 
-export { SECTIONS };
+/** Items of one level and format, newest first. */
+export function levelItems(level, format) {
+  return items.filter((i) => i.format === format && i.memberships.some((m) => m.level === level));
+}
+
+/** Summary for a playlist card. */
+export function sectionSummary(level, section) {
+  const videos = sectionItems(level, section, 'video');
+  const shorts = sectionItems(level, section, 'short');
+  const cover = videos[0]?.thumbnail || shorts[0]?.thumbnail || null;
+  return { videos: videos.length, shorts: shorts.length, cover };
+}
+
+export { SECTIONS, ALL_SECTIONS };

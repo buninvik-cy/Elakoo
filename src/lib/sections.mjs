@@ -1,56 +1,40 @@
-// The 8 public sections of the site. This list is the single source of truth
-// for levels/sections. Do not add A1, B2, Reading or Listening here.
+// Levels, groups and playlists all come from config/elakoo.config.json.
+// To add a level or a playlist, edit the config - no code changes needed.
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 
-export const LEVELS = [
-  { slug: 'a2', label: 'A2' },
-  { slug: 'b1', label: 'B1' },
-];
+// ELAKOO_CONFIG_PATH lets tests/previews use another config.
+const config = JSON.parse(readFileSync(process.env.ELAKOO_CONFIG_PATH || path.resolve('config/elakoo.config.json'), 'utf8'));
+export { config };
 
-export const SECTION_TYPES = [
-  {
-    slug: 'speaking-part-1',
-    label: 'Speaking Part 1',
-    short: 'Speaking · Part 1',
-    description: 'Video practice for Speaking Part 1 of the Greek exam.',
-  },
-  {
-    slug: 'speaking-part-2',
-    label: 'Speaking Part 2',
-    short: 'Speaking · Part 2',
-    description: 'Video practice for Speaking Part 2 of the Greek exam.',
-  },
-  {
-    slug: 'speaking-part-3',
-    label: 'Speaking Part 3',
-    short: 'Speaking · Part 3',
-    description: 'Video practice for Speaking Part 3 of the Greek exam.',
-  },
-  {
-    slug: 'writing',
-    label: 'Writing',
-    short: 'Writing',
-    description: 'Video practice for the Writing part of the Greek exam.',
-  },
-];
+const isReal = (id) => typeof id === 'string' && id.length > 0 && !id.startsWith('REPLACE');
 
-/** All 8 sections: { key: 'a2-speaking-part-1', level, section, ... } */
-export const SECTIONS = LEVELS.flatMap((level) =>
-  SECTION_TYPES.map((type) => ({
-    key: `${level.slug}-${type.slug}`,
+export const GROUPS = config.groups || [];
+
+/** Levels in config order: { slug, label } */
+export const LEVELS = (config.levels || []).map(({ slug, label }) => ({ slug, label }));
+
+/** Every configured playlist ("section"), with or without an ID. */
+export const ALL_SECTIONS = (config.levels || []).flatMap((level) =>
+  (level.playlists || []).map((p) => ({
+    key: `${level.slug}-${p.slug}`,
     level: level.slug,
     levelLabel: level.label,
-    section: type.slug,
-    sectionLabel: type.label,
-    sectionShort: type.short,
-    description: type.description,
-    path: `/${level.slug}/${type.slug}/`,
+    section: p.slug,
+    sectionLabel: p.title,
+    group: p.group || 'exam',
+    description: p.description || `Greek ${level.label} · ${p.title}: video practice for the Greek exam.`,
+    playlistId: isReal(p.playlistId) ? p.playlistId : null,
+    path: `/${level.slug}/${p.slug}/`,
   })),
 );
 
-export function findSection(level, section) {
-  return SECTIONS.find((s) => s.level === level && s.section === section);
-}
+/** Sections that are live (have a real YouTube playlist ID). Only these get pages. */
+export const SECTIONS = ALL_SECTIONS.filter((s) => s.playlistId);
 
-export function sectionKey(level, section) {
-  return `${level}-${section}`;
+/** Unique section types across levels, for catalog filters: { slug, label } */
+export const SECTION_TYPES = [...new Map(ALL_SECTIONS.map((s) => [s.section, { slug: s.section, label: s.sectionLabel }])).values()];
+
+export function findSection(level, section) {
+  return ALL_SECTIONS.find((s) => s.level === level && s.section === section);
 }

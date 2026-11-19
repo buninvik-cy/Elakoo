@@ -3,7 +3,7 @@
 import { labels, formatDuration, watchHref } from '../lib/data.mjs';
 interface Props {
   item: any;
-  context?: { level: string; section: string };
+  context?: { level: string; section?: string };
   showLabels?: boolean;
 }
 const { item, context, showLabels = true } = Astro.props;

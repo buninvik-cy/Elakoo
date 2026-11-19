@@ -1,8 +1,8 @@
 ---
 import { channelUrl } from '../lib/data.mjs';
+import { LEVELS } from '../lib/sections.mjs';
 const links = [
-  { href: '/#a2', label: 'A2' },
-  { href: '/#b1', label: 'B1' },
+  ...LEVELS.map((l) => ({ href: `/?level=${l.slug}#levels`, label: l.label })),
   { href: '/videos/', label: 'All Videos' },
   { href: '/about/', label: 'About' },
   { href: '/contact/', label: 'Contact' },

@@ -1,16 +1,51 @@
 {
   "siteUrl": "https://elakoo.com",
   "channelUrl": "https://www.youtube.com/@elakoogreek",
-  "sectionPlaylists": {
-    "a2-speaking-part-1": null,
-    "a2-speaking-part-2": null,
-    "a2-speaking-part-3": null,
-    "a2-writing": null,
-    "b1-speaking-part-1": null,
-    "b1-speaking-part-2": null,
-    "b1-speaking-part-3": null,
-    "b1-writing": null
-  },
+  "groups": [
+    { "slug": "exam", "title": "Exam sections", "description": "Practice for each part of the Greek exam." },
+    { "slug": "practice", "title": "More practice", "description": "Listening, stories and words by topic." }
+  ],
+  "levels": [
+    {
+      "slug": "a1",
+      "label": "A1",
+      "playlists": [
+        { "slug": "speaking-part-1", "title": "Speaking Part 1", "group": "exam", "playlistId": null },
+        { "slug": "speaking-part-2", "title": "Speaking Part 2", "group": "exam", "playlistId": null },
+        { "slug": "speaking-part-3", "title": "Speaking Part 3", "group": "exam", "playlistId": null },
+        { "slug": "writing", "title": "Writing", "group": "exam", "playlistId": null },
+        { "slug": "listening", "title": "Listening", "group": "practice", "playlistId": null },
+        { "slug": "stories", "title": "Stories", "group": "practice", "playlistId": null },
+        { "slug": "vocabulary", "title": "Words by topic", "group": "practice", "playlistId": null }
+      ]
+    },
+    {
+      "slug": "a2",
+      "label": "A2",
+      "playlists": [
+        { "slug": "speaking-part-1", "title": "Speaking Part 1", "group": "exam", "playlistId": null },
+        { "slug": "speaking-part-2", "title": "Speaking Part 2", "group": "exam", "playlistId": null },
+        { "slug": "speaking-part-3", "title": "Speaking Part 3", "group": "exam", "playlistId": null },
+        { "slug": "writing", "title": "Writing", "group": "exam", "playlistId": null },
+        { "slug": "listening", "title": "Listening", "group": "practice", "playlistId": null },
+        { "slug": "stories", "title": "Stories", "group": "practice", "playlistId": null },
+        { "slug": "vocabulary", "title": "Words by topic", "group": "practice", "playlistId": null }
+      ]
+    },
+    {
+      "slug": "b1",
+      "label": "B1",
+      "playlists": [
+        { "slug": "speaking-part-1", "title": "Speaking Part 1", "group": "exam", "playlistId": null },
+        { "slug": "speaking-part-2", "title": "Speaking Part 2", "group": "exam", "playlistId": null },
+        { "slug": "speaking-part-3", "title": "Speaking Part 3", "group": "exam", "playlistId": null },
+        { "slug": "writing", "title": "Writing", "group": "exam", "playlistId": null },
+        { "slug": "listening", "title": "Listening", "group": "practice", "playlistId": null },
+        { "slug": "stories", "title": "Stories", "group": "practice", "playlistId": null },
+        { "slug": "vocabulary", "title": "Words by topic", "group": "practice", "playlistId": null }
+      ]
+    }
+  ],
   "shortsIndexPlaylistId": null,
   "formatOverrides": {},
   "compilations": {},

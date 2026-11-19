@@ -4,7 +4,7 @@
 import VideoCard from './VideoCard.astro';
 interface Props {
   items: any[];
-  context?: { level: string; section: string };
+  context?: { level: string; section?: string };
   expandable?: boolean;
   showLabels?: boolean;
   label: string;
@@ -29,7 +29,11 @@ const { items, context, expandable = false, showLabels = true, label } = Astro.p
     wrap.querySelectorAll<HTMLButtonElement>('.arrow').forEach((b) =>
       b.addEventListener('click', () => row.scrollBy({ left: Number(b.dataset.dir) * row.clientWidth * 0.8, behavior: 'smooth' })),
     );
-    const check = () => wrap.classList.toggle('no-overflow', row.scrollWidth <= row.clientWidth + 2);
+    const check = () => {
+      wrap.classList.toggle('no-overflow', row.scrollWidth <= row.clientWidth + 2);
+      const thumb = row.querySelector<HTMLElement>('.thumb');
+      if (thumb) wrap.style.setProperty('--shorts-mid', `${thumb.offsetHeight / 2}px`);
+    };
     check();
     addEventListener('resize', check);
     const toggle = wrap.querySelector<HTMLButtonElement>('[data-show-all]');
