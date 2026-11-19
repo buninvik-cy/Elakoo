@@ -1,8 +1,11 @@
-// Cloudflare Pages Function: POST /api/contact
-// Sends the message to the owner via Resend (https://resend.com).
+// POST /api/contact - runs on the server via server/contact-server.mjs
+// (also works as a Cloudflare Pages Function).
+// Delivers the message to the owner by Telegram and/or email (Resend).
 //
-// Environment variables (Cloudflare Pages -> Settings -> Variables and Secrets):
-//   RESEND_API_KEY      (secret)  Resend API key
+// Environment variables (/etc/elakoo/elakoo.env on the server):
+//   TELEGRAM_BOT_TOKEN            bot token from @BotFather
+//   TELEGRAM_CHAT_ID              your chat id (deploy/telegram-setup.sh fills it in)
+//   RESEND_API_KEY      (secret)  Resend API key (optional, for email)
 //   CONTACT_TO_EMAIL              where messages are delivered, e.g. hello@elakoo.com
 //   CONTACT_FROM_EMAIL            verified sender in Resend, e.g. "Elakoo website <no-reply@elakoo.com>"
 //   TURNSTILE_SECRET_KEY (optional secret) enables Cloudflare Turnstile check if set
@@ -75,11 +78,42 @@ export async function onRequestPost({ request, env }) {
     await env.RATE_LIMIT.put(key, String(count + 1), { expirationTtl: 3700 });
   }
 
-  if (!env.RESEND_API_KEY || !env.CONTACT_TO_EMAIL || !env.CONTACT_FROM_EMAIL) {
-    console.error('Contact form is not configured: set RESEND_API_KEY, CONTACT_TO_EMAIL, CONTACT_FROM_EMAIL.');
+  const channels = [];
+  if (env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID) channels.push(sendTelegram);
+  if (env.RESEND_API_KEY && env.CONTACT_TO_EMAIL && env.CONTACT_FROM_EMAIL) channels.push(sendResend);
+  if (!channels.length) {
+    console.error('Contact form is not configured: set TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID and/or RESEND_API_KEY + CONTACT_TO_EMAIL + CONTACT_FROM_EMAIL.');
     return reply(false, 'The contact form is not available right now. Please try again later.', 503);
   }
 
+  // Success only when at least one channel confirms delivery.
+  const msg = { name, email, subject, message };
+  const results = await Promise.all(channels.map((send) => send(msg, env).catch((err) => {
+    console.error('Contact channel error', err?.message || err);
+    return false;
+  })));
+  if (!results.some(Boolean)) {
+    return reply(false, 'Sorry, the message could not be sent. Please try again later.', 502);
+  }
+  return reply(true);
+}
+
+async function sendTelegram({ name, email, subject, message }, env) {
+  const text = `<b>New message from elakoo.com</b>\n<b>Name:</b> ${escapeHtml(name)}\n<b>Email:</b> ${escapeHtml(email)}\n<b>Subject:</b> ${escapeHtml(subject)}\n\n${escapeHtml(message)}`.slice(0, 4000);
+  const res = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: env.TELEGRAM_CHAT_ID, text, parse_mode: 'HTML', disable_web_page_preview: true }),
+  });
+  const out = await res.json().catch(() => ({}));
+  if (!res.ok || !out.ok) {
+    console.error('Telegram error', res.status, JSON.stringify(out).slice(0, 300));
+    return false;
+  }
+  return true;
+}
+
+async function sendResend({ name, email, subject, message }, env) {
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
@@ -92,14 +126,12 @@ export async function onRequestPost({ request, env }) {
       html: `<p><b>Name:</b> ${escapeHtml(name)}<br><b>Email:</b> ${escapeHtml(email)}<br><b>Subject:</b> ${escapeHtml(subject)}</p><p>${escapeHtml(message).replace(/\n/g, '<br>')}</p>`,
     }),
   });
-
-  // Success only when the provider confirms it accepted the email.
   const out = await res.json().catch(() => ({}));
   if (!res.ok || !out.id) {
     console.error('Resend error', res.status, JSON.stringify(out).slice(0, 300));
-    return reply(false, 'Sorry, the message could not be sent. Please try again later.', 502);
+    return false;
   }
-  return reply(true);
+  return true;
 }
 
 export function onRequestGet() {

@@ -32,6 +32,8 @@ const RATE_LIMIT = {
 setInterval(() => { const now = Date.now(); for (const [k, e] of store) if (e.exp < now) store.delete(k); }, 600_000).unref();
 
 const env = {
+  TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
+  TELEGRAM_CHAT_ID: process.env.TELEGRAM_CHAT_ID,
   RESEND_API_KEY: process.env.RESEND_API_KEY,
   CONTACT_TO_EMAIL: process.env.CONTACT_TO_EMAIL,
   CONTACT_FROM_EMAIL: process.env.CONTACT_FROM_EMAIL,

@@ -4,7 +4,7 @@
 
 - **Сервер:** `185.183.55.151` (Ubuntu/Debian). nginx отдаёт готовые страницы, HTTPS выдаёт Let's Encrypt.
 - **Обновление:** служба `elakoo-update` (каждые 4 часа и по команде `elakoo-update`): свежий код → синхронизация с YouTube → сборка → публикация. Если сборка не удалась, работающий сайт не трогается.
-- **Форма:** служба `elakoo-contact` (`server/contact-server.mjs`) отправляет письма через [Resend](https://resend.com).
+- **Форма:** служба `elakoo-contact` (`server/contact-server.mjs`) присылает сообщения в Telegram и/или на почту через [Resend](https://resend.com).
 
 ## Структура
 
@@ -62,7 +62,8 @@ nano /etc/elakoo/elakoo.env
 | Переменная | Что это |
 |---|---|
 | `YOUTUBE_API_KEY` | Ключ YouTube Data API v3 (см. ниже). Без него видео не подтягиваются. |
-| `RESEND_API_KEY` | Ключ Resend для отправки писем формы. |
+| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | Куда присылать сообщения с формы в Telegram. Заполняются командой ниже. |
+| `RESEND_API_KEY` | Ключ Resend, если нужны ещё и письма на почту (необязательно). |
 | `CONTACT_TO_EMAIL` | Куда приходят письма с формы. |
 | `CONTACT_FROM_EMAIL` | Отправитель, например `Elakoo website <no-reply@elakoo.com>` (домен подтверждается в Resend). |
 
@@ -73,7 +74,12 @@ systemctl restart elakoo-contact && elakoo-update
 
 **Ключ YouTube:** откройте [console.cloud.google.com](https://console.cloud.google.com) → создайте проект → APIs & Services → Library → **YouTube Data API v3** → Enable → Credentials → Create credentials → API key. В API restrictions оставьте только YouTube Data API v3.
 
-**Resend:** зарегистрируйтесь на resend.com → Domains → добавьте `elakoo.com` и DNS-записи, которые покажет Resend (их нужно добавить в GoDaddy) → API Keys → создайте ключ.
+**Telegram (рекомендуется):**
+1. В Telegram откройте **@BotFather** → `/newbot` → придумайте имя и адрес бота (адрес должен заканчиваться на `bot`). BotFather пришлёт токен вида `123456:ABC...`.
+2. Откройте своего нового бота и нажмите **Start** (или напишите ему «hi»).
+3. На сервере выполните: `bash /opt/elakoo/deploy/telegram-setup.sh ВАШ_ТОКЕН`. Скрипт сам найдёт ваш чат, сохранит настройки и пришлёт тестовое сообщение.
+
+**Resend (почта, необязательно):** зарегистрируйтесь на resend.com → Domains → добавьте `elakoo.com` и DNS-записи, которые покажет Resend (их нужно добавить в GoDaddy) → API Keys → создайте ключ.
 
 Пока ключей формы нет, форма честно отвечает «not available right now», а не делает вид, что письмо отправлено.
 

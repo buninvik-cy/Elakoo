@@ -43,6 +43,10 @@ if [ ! -f "$ENVF" ]; then
   cat > "$ENVF" <<EOF
 # ELAKOO settings. After editing run:  elakoo-update  and  systemctl restart elakoo-contact
 YOUTUBE_API_KEY=
+# Contact form -> Telegram (filled in by: bash /opt/elakoo/deploy/telegram-setup.sh <BOT_TOKEN>)
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+# Contact form -> email via Resend (optional)
 RESEND_API_KEY=
 CONTACT_TO_EMAIL=
 CONTACT_FROM_EMAIL=Elakoo website <no-reply@${DOMAIN}>
