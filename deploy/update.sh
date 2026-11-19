@@ -39,14 +39,14 @@ FORCE=""
 if [ -f "$DATA/force-sync" ]; then FORCE="--force"; rm -f "$DATA/force-sync"; log "Forced sync"; fi
 node scripts/sync-youtube.mjs $FORCE || log "YouTube sync FAILED - the site keeps the last good list of videos."
 
-# 3. Build into a temporary folder
-rm -rf "$DATA/build"
-npx astro build --outDir "$DATA/build" --silent
-test -f "$DATA/build/index.html"
+# 3. Build (inside the code folder: Astro moves files and cannot do that across mounts)
+rm -rf "$APP/dist"
+npx astro build --silent
+test -f "$APP/dist/index.html"
 
 # 4. Publish
-rsync -a --delete "$DATA/build/" "$WEB/"
-rm -rf "$DATA/build"
+rsync -a --delete "$APP/dist/" "$WEB/"
+rm -rf "$APP/dist"
 log "Site published."
 
 # Contact server code changed -> ask systemd (ExecStartPost) to restart it.
