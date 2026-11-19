@@ -36,17 +36,19 @@ const siblings = ALL_SECTIONS.filter((x) => x.level === s.level);
         ? <a class:list={['chip', { on: x.key === s.key }]} href={x.path} aria-current={x.key === s.key ? 'page' : undefined}>{x.sectionLabel}</a>
         : <span class="chip soon" title="Coming soon">{x.sectionLabel}</span>)}
     </nav>
-
+  </div>
+  <div class="band" data-lv={s.level}>
+  <div class="container band-stack">
     <Player items={[...videos, ...shorts]} context={context} />
 
     <section class="block" aria-labelledby="sh-h">
-      <h2 id="sh-h">Shorts · Quick Practice</h2>
+      <div class="shelf-head"><h2 id="sh-h">Shorts <span class="muted">Quick practice</span></h2></div>
       {shorts.length
         ? <ShortsRow items={shorts} context={context} expandable showLabels={false} label={`${s.levelLabel} ${s.sectionLabel} Shorts`} />
         : <p class="empty">Shorts are coming soon.</p>}
     </section>
     <section class="block" aria-labelledby="fv-h">
-      <h2 id="fv-h">Full Videos</h2>
+      <div class="shelf-head"><h2 id="fv-h">Full videos</h2></div>
       {videos.length ? (
         <div data-paged data-page-size={PAGE}>
           <div class="grid-videos">{videos.map((item) => <VideoCard item={item} context={context} showLabels={false} />)}</div>
@@ -54,7 +56,7 @@ const siblings = ALL_SECTIONS.filter((x) => x.level === s.level);
         </div>
       ) : <p class="empty">New videos are coming soon.</p>}
     </section>
-
+  </div>
   </div>
 </Base>
 <script>

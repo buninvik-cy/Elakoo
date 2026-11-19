@@ -1,118 +1,97 @@
 ---
 import Base from '../layouts/Base.astro';
-import VideoCard from '../components/VideoCard.astro';
 import ShortsRow from '../components/ShortsRow.astro';
-import PlaylistCard from '../components/PlaylistCard.astro';
+import Shelf from '../components/Shelf.astro';
 import { LEVELS, GROUPS, ALL_SECTIONS } from '../lib/sections.mjs';
-import { latest, levelItems, channelUrl } from '../lib/data.mjs';
+import { levelItems, channelUrl } from '../lib/data.mjs';
 
 const levels = LEVELS.map((l) => {
   const sections = ALL_SECTIONS.filter((s) => s.level === l.slug);
+  const live = sections.filter((s) => s.playlistId);
+  // Live playlists in group order (exam first, then practice).
+  const order = GROUPS.map((g) => g.slug);
+  live.sort((a, b) => order.indexOf(a.group) - order.indexOf(b.group));
   return {
     ...l,
-    live: sections.some((s) => s.playlistId),
+    live,
+    soon: sections.filter((s) => !s.playlistId),
     shorts: levelItems(l.slug, 'short').slice(0, 16),
-    groups: GROUPS.map((g) => ({ ...g, sections: sections.filter((s) => s.group === g.slug) })).filter((g) => g.sections.length),
   };
 });
-// Default tab: first level that has content (A1 can be empty for a while).
-const defaultLevel = (levels.find((l) => l.live) || levels[0])?.slug;
-const levelList = LEVELS.map((l) => l.label).join(', ').replace(/, ([^,]*)$/, ' & $1');
-const latestVideos = latest('video', 6);
+const defaultLevel = (levels.find((l) => l.live.length) || levels[0])?.slug;
+const levelList = LEVELS.map((l) => l.label).join(', ').replace(/, ([^,]*)$/, ' and $1');
 ---
 <Base title="ELAKOO" description={`Free ${levelList} Greek exam video practice: speaking, writing, listening, stories and vocabulary. Watch here or on YouTube.`}>
-  <div class="container">
-    <section class="hero">
-      <p class="badge">LEARN GREEK WITH ELAKOO</p>
-      <h1>Prepare for your Greek exam</h1>
-      <p class="lead">Free {levelList} Greek exam video practice. Watch here or on YouTube.</p>
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="#levels">Choose your level</a>
-        {channelUrl && <a class="btn btn-ghost" href={channelUrl} target="_blank" rel="noopener noreferrer" data-track="youtube-channel">YouTube channel</a>}
-      </div>
-    </section>
-
-    <section class="block" id="levels" aria-labelledby="levels-h" data-levels data-default={defaultLevel}>
-      <h2 id="levels-h">Choose your level</h2>
-      <div class="level-tabs" role="tablist" aria-label="Level">
+  <section class="hero" id="levels" data-levels data-default={defaultLevel}>
+    <div class="container hero-inner">
+      <h1>Greek exam. <span class="hero-accent">Ready!</span></h1>
+      <p class="lead">Free video practice for {levelList}. Watch here or on YouTube.</p>
+      <div class="level-capsule" role="tablist" aria-label="Level">
         {levels.map((l) => (
-          <a role="tab" class="level-tab" data-lv={l.slug} id={`tab-${l.slug}`} href={`/?level=${l.slug}#levels`} aria-controls={`panel-${l.slug}`} data-level-tab={l.slug} data-track="choose-level">
-            {l.label}
-          </a>
+          <a role="tab" class="level-tab" data-lv={l.slug} id={`tab-${l.slug}`} href={`/?level=${l.slug}#levels`} aria-controls={`panel-${l.slug}`} data-level-tab={l.slug} data-track="choose-level">{l.label}</a>
         ))}
       </div>
+    </div>
+    <div class="skyline" aria-hidden="true"></div>
+  </section>
 
+  <div class="band">
+    <div class="container">
       {levels.map((l) => (
         <div class="level-panel" data-lv={l.slug} id={`panel-${l.slug}`} role="tabpanel" aria-labelledby={`tab-${l.slug}`} data-level-panel={l.slug}>
-          <h3 class="sr-only">Level {l.label}</h3>
-          {!l.live && <p class="empty">{l.label} videos are coming soon. Meanwhile, try the other levels.</p>}
+          <h2 class="sr-only">Level {l.label}</h2>
+          {!l.live.length && <p class="empty">{l.label} videos are coming soon. Meanwhile, try the other levels.</p>}
 
           {l.shorts.length > 0 && (
-            <div class="level-block">
-              <div class="block-head">
-                <h3>Shorts · Quick practice</h3>
-                <a href={`/videos/?format=short&level=${l.slug}`}>All {l.label} Shorts →</a>
+            <section class="shelf" aria-labelledby={`shorts-${l.slug}`}>
+              <div class="shelf-head">
+                <h3 id={`shorts-${l.slug}`}>Shorts <span class="muted">Quick practice</span></h3>
+                <div class="shelf-links"><a href={`/videos/?format=short&level=${l.slug}`}>See all ›</a></div>
               </div>
-              <ShortsRow items={l.shorts} context={{ level: l.slug }} label={`${l.label} Shorts`} />
-            </div>
+              <ShortsRow items={l.shorts} context={{ level: l.slug }} label={`${l.label} Shorts`} showLabels={false} />
+            </section>
           )}
 
-          {l.groups.map((g) => (
-            <div class="level-block">
-              <div class="group-head">
-                <h3>{g.title}</h3>
-                {g.description && <p class="muted">{g.description}</p>}
-              </div>
-              <div class="grid-playlists">
-                {g.sections.map((s) => <PlaylistCard s={s} />)}
-              </div>
-            </div>
-          ))}
+          {l.live.map((s) => <Shelf s={s} />)}
+
+          {l.live.length > 0 && l.soon.length > 0 && (
+            <p class="soon-line"><span>Coming soon:</span> {l.soon.map((s) => s.sectionLabel).join(' · ')}</p>
+          )}
         </div>
       ))}
-    </section>
-
-    {latestVideos.length > 0 && (
-      <section class="block" aria-labelledby="lv-h">
-        <div class="block-head">
-          <h2 id="lv-h">Latest videos</h2>
-          <a href="/videos/">All videos →</a>
-        </div>
-        <div class="grid-videos">{latestVideos.map((item) => <VideoCard item={item} />)}</div>
-      </section>
-    )}
-
-    <section class="block panel about-strip" aria-labelledby="about-h">
-      <h2 id="about-h">About Elakoo</h2>
-      <p>Elakoo is a free collection of videos to prepare for the Greek language exam. Choose your level, pick an exam section or extra practice, and watch here or on YouTube.</p>
-      <p><a href="/about/">More about Elakoo →</a></p>
-    </section>
+    </div>
   </div>
+
+  {channelUrl && (
+    <section class="cta">
+      <div class="container cta-inner">
+        <h2>Don’t miss new videos.</h2>
+        <a class="btn btn-primary" href={channelUrl} target="_blank" rel="noopener noreferrer" data-track="youtube-channel">Subscribe on YouTube</a>
+      </div>
+    </section>
+  )}
 </Base>
 <script>
   const root = document.querySelector<HTMLElement>('[data-levels]');
   if (root) {
     const tabs = [...root.querySelectorAll<HTMLAnchorElement>('[data-level-tab]')];
-    const panels = [...root.querySelectorAll<HTMLElement>('[data-level-panel]')];
+    const panels = [...document.querySelectorAll<HTMLElement>('[data-level-panel]')];
     const valid = new Set(tabs.map((t) => t.dataset.levelTab));
     const read = (k: string) => { try { return localStorage.getItem(k); } catch { return null; } };
     const write = (k: string, v: string) => { try { localStorage.setItem(k, v); } catch { /* ignore */ } };
 
-    function show(level: string, focus = false) {
+    function show(level: string) {
       tabs.forEach((t) => {
         const on = t.dataset.levelTab === level;
         t.setAttribute('aria-selected', String(on));
         t.tabIndex = on ? 0 : -1;
-        if (on && focus) t.focus();
       });
       panels.forEach((p) => (p.hidden = p.dataset.levelPanel !== level));
-      // Carousels measure themselves on resize; panels that were hidden need a nudge.
       window.dispatchEvent(new Event('resize'));
     }
 
     const fromUrl = new URLSearchParams(location.search).get('level');
-    const saved = read('elakoo-level');
-    const start = [fromUrl, saved, root.dataset.default].find((l) => l && valid.has(l)) || tabs[0]?.dataset.levelTab;
+    const start = [fromUrl, read('elakoo-level'), root.dataset.default].find((l) => l && valid.has(l)) || tabs[0]?.dataset.levelTab;
     if (start) show(start);
 
     tabs.forEach((t, i) => {
@@ -121,7 +100,7 @@ const latestVideos = latest('video', 6);
         const level = t.dataset.levelTab!;
         show(level);
         write('elakoo-level', level);
-        const url = new URL(location.href); url.searchParams.set('level', level); url.hash = 'levels';
+        const url = new URL(location.href); url.searchParams.set('level', level); url.hash = '';
         history.replaceState(null, '', url);
       });
       t.addEventListener('keydown', (e) => {

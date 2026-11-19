@@ -1,0 +1,28 @@
+---
+// One horizontal "shelf" of a playlist (E1 style): title, See all, YouTube, then a scrollable row of cards.
+import VideoCard from './VideoCard.astro';
+import { sectionItems, playlistUrl } from '../lib/data.mjs';
+interface Props { s: any; max?: number }
+const { s, max = 10 } = Astro.props;
+const videos = sectionItems(s.level, s.section, 'video');
+const shorts = sectionItems(s.level, s.section, 'short');
+// Full videos first; a playlist with only Shorts shows its Shorts.
+const items = (videos.length ? videos : shorts).slice(0, max);
+const isShorts = !videos.length && shorts.length > 0;
+const yt = playlistUrl(s.level, s.section);
+const count = videos.length + shorts.length;
+---
+<section class="shelf" data-lv={s.level} aria-labelledby={`shelf-${s.key}`}>
+  <div class="shelf-head">
+    <h3 id={`shelf-${s.key}`}><a href={s.path}>{s.sectionLabel}</a></h3>
+    <div class="shelf-links">
+      <a href={s.path} data-track="open-playlist-page">See all{count ? ` (${count})` : ''} ›</a>
+      {yt && <a href={yt} target="_blank" rel="noopener noreferrer" data-track="open-playlist" aria-label={`${s.levelLabel} ${s.sectionLabel} playlist on YouTube`}>YouTube ↗</a>}
+    </div>
+  </div>
+  {items.length
+    ? <div class:list={['shelf-row', { 'is-shorts': isShorts }]} role="region" aria-label={`${s.levelLabel} ${s.sectionLabel}`} tabindex="0">
+        {items.map((item) => <VideoCard item={item} context={{ level: s.level, section: s.section }} showLabels={false} />)}
+      </div>
+    : <p class="shelf-empty">New videos are coming soon.</p>}
+</section>
