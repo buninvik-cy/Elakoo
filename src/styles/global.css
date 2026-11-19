@@ -473,3 +473,6 @@ a { color: var(--blue); }
 .site-nav { align-items: center; }
 @media (max-width: 760px) { .site-nav { background: #fff; align-items: stretch; } .site-nav a { padding: 13px 0; } }
 @media (max-width: 760px) { .site-nav { gap: 0; padding-bottom: 14px; } }
+/* Subscribe buttons back to brand blue (play icon stays) */
+.btn-sub { background: var(--blue); }
+.btn-sub:hover { background: var(--blue-dark); }
