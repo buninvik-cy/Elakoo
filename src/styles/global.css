@@ -496,3 +496,6 @@ a { color: var(--blue); }
   .brand-lockup { grid-template-columns: auto auto; grid-template-areas: "mark word" "mark ela" "pill pill"; }
   .lockup-pill { justify-self: center; margin-top: 12px; }
 }
+/* Lockup without the pill */
+.brand-lockup { grid-template-columns: auto auto; grid-template-areas: "mark word" "mark ela"; }
+@media (max-width: 700px) { .brand-lockup { grid-template-areas: "mark word" "mark ela"; } }
