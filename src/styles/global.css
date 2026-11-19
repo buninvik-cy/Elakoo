@@ -26,7 +26,9 @@ h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
 h2 { font-size: clamp(1.25rem, 2.4vw, 1.6rem); }
 h3 { font-size: 1rem; }
 [hidden] { display: none !important; }
-:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 6px; }
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+/* No grey/square tap flash on phones: our buttons have their own pressed states. */
+a, button { -webkit-tap-highlight-color: transparent; }
 
 .container { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
 .container.narrow { max-width: 760px; }
@@ -261,3 +263,13 @@ select:focus, input:focus, textarea:focus { border-color: var(--blue); outline: 
 [data-lv] .card-link:hover .card-title, [data-lv] .pl-title a:hover { color: var(--lv-c); }
 [data-lv] .card.is-selected .thumb { outline-color: var(--lv-c); }
 [data-lv] .player { background: color-mix(in srgb, var(--lv-c) 5%, #fff); }
+
+/* Pill-shaped controls keep their round shape when tapped or focused. */
+.level-tab, .chip, .tag, .btn { -webkit-tap-highlight-color: transparent; }
+.level-tab:focus-visible, .chip:focus-visible { outline-color: var(--lv-c, var(--blue)); outline-offset: 3px; }
+.level-tab:active, .chip:active { transform: scale(.97); }
+@media (max-width: 560px) {
+  .level-tabs { flex-wrap: nowrap; gap: 8px; }
+  .level-tab { flex: 1; min-width: 0; padding: 10px 8px; font-size: 1.05rem; gap: 5px; }
+  .soon-dot { font-size: .6rem; padding: 2px 5px; }
+}
