@@ -44,7 +44,7 @@ const latestVideos = latest('video', 6);
       </div>
 
       {levels.map((l) => (
-        <div class="level-panel" id={`panel-${l.slug}`} role="tabpanel" aria-labelledby={`tab-${l.slug}`} data-level-panel={l.slug}>
+        <div class="level-panel" data-lv={l.slug} id={`panel-${l.slug}`} role="tabpanel" aria-labelledby={`tab-${l.slug}`} data-level-panel={l.slug}>
           <h3 class="sr-only">Level {l.label}</h3>
           {!l.live && <p class="empty">{l.label} videos are coming soon. Meanwhile, try the other levels.</p>}
 

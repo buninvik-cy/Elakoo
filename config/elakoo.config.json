@@ -17,7 +17,7 @@
     {
       "slug": "a1",
       "label": "A1",
-      "color": null,
+      "color": "#1976d2",
       "playlists": [
         {
           "slug": "speaking-part-1",

@@ -249,3 +249,15 @@ select:focus, input:focus, textarea:focus { border-color: var(--blue); outline: 
 .lv-badge { display: inline-block; background: var(--lv-c); color: #fff; border-radius: 12px; padding: 0 .35em; }
 .chips .chip.on { background: var(--lv-c); border-color: var(--lv-c); }
 .tag[data-lv] { color: var(--lv-c); background: color-mix(in srgb, var(--lv-c) 12%, #fff); }
+
+/* Everything inside a level uses that level's single colour. */
+[data-lv] .btn-primary { background: var(--lv-c); }
+[data-lv] .btn-primary:hover { background: color-mix(in srgb, var(--lv-c) 82%, #000); }
+[data-lv] .btn-ghost { color: var(--lv-c); }
+[data-lv] .btn-ghost:hover, [data-lv] .arrow:hover { border-color: var(--lv-c); }
+[data-lv] .play-icon, [data-lv] .arrow { color: var(--lv-c); }
+[data-lv] .play-big { background: var(--lv-c); }
+[data-lv] .block-head a, [data-lv] .breadcrumb a:hover { color: var(--lv-c); }
+[data-lv] .card-link:hover .card-title, [data-lv] .pl-title a:hover { color: var(--lv-c); }
+[data-lv] .card.is-selected .thumb { outline-color: var(--lv-c); }
+[data-lv] .player { background: color-mix(in srgb, var(--lv-c) 5%, #fff); }
