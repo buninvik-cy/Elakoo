@@ -7,11 +7,11 @@ interface Props { s: any; max?: number }
 const { s, max = 10 } = Astro.props;
 const videos = sectionItems(s.level, s.section, 'video');
 const shorts = sectionItems(s.level, s.section, 'short');
-// Full videos first; a playlist with only Shorts shows its Shorts.
-const items = (videos.length ? videos : shorts).slice(0, max);
-const isShorts = !videos.length && shorts.length > 0;
+// Shelves show full videos only; Shorts live in the Shorts carousel.
+const items = videos.slice(0, max);
+const isShorts = false;
 const yt = playlistUrl(s.level, s.section);
-const count = videos.length + shorts.length;
+const count = videos.length;
 ---
 <section class="shelf" data-lv={s.level} aria-labelledby={`shelf-${s.key}`}>
   <div class="shelf-head">
@@ -25,5 +25,5 @@ const count = videos.length + shorts.length;
     ? <div class:list={['shelf-row', { 'is-shorts': isShorts }]} role="region" aria-label={`${s.levelLabel} ${s.sectionLabel}`} tabindex="0">
         {items.map((item) => <VideoCard item={item} context={{ level: s.level, section: s.section }} showLabels={false} />)}
       </div>
-    : <Soon text="New videos are coming soon." />}
+    : <Soon text={shorts.length ? "Full videos are coming soon. Watch the Shorts above!" : "New videos are coming soon."} />}
 </section>
