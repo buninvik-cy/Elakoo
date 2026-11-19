@@ -1,7 +1,13 @@
 // Site-side access to the synced catalog and config (read at build time only).
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import config from '../../config/elakoo.config.json';
-import catalog from '../../data/catalog.json';
 import { SECTIONS, findSection } from './sections.mjs';
+
+// On the server the catalog lives outside the code folder (ELAKOO_CATALOG_PATH),
+// so code updates never overwrite synced data.
+const catalogPath = process.env.ELAKOO_CATALOG_PATH || path.resolve('data/catalog.json');
+const catalog = JSON.parse(readFileSync(catalogPath, 'utf8'));
 
 const isReal = (id) => typeof id === 'string' && id && !id.startsWith('REPLACE');
 

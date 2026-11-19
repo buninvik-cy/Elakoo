@@ -1,0 +1,17 @@
+[Unit]
+Description=Elakoo: sync YouTube videos, build and publish the site
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=elakoo
+Group=elakoo
+EnvironmentFile=/etc/elakoo/elakoo.env
+ExecStart=/opt/elakoo/deploy/update.sh
+# Runs as root ("+") only to restart the contact service when its code changed.
+ExecStartPost=+/bin/sh -c 'if [ -f /var/lib/elakoo/restart-contact ]; then rm -f /var/lib/elakoo/restart-contact; systemctl restart elakoo-contact; fi'
+TimeoutStartSec=20min
+ProtectSystem=strict
+ReadWritePaths=/opt/elakoo /var/www/elakoo /var/lib/elakoo
+PrivateTmp=true

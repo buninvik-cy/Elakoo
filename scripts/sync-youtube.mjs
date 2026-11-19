@@ -12,7 +12,7 @@ import { buildCatalog, sameContent } from './lib/catalog.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CONFIG_PATH = path.join(ROOT, 'config/elakoo.config.json');
-const CATALOG_PATH = path.join(ROOT, 'data/catalog.json');
+const CATALOG_PATH = process.env.ELAKOO_CATALOG_PATH || path.join(ROOT, 'data/catalog.json');
 const API = 'https://www.googleapis.com/youtube/v3';
 const FORCE = process.argv.includes('--force');
 
@@ -121,7 +121,7 @@ async function main() {
     return;
   }
   await writeFile(CATALOG_PATH, JSON.stringify(catalog, null, 2) + '\n');
-  log('data/catalog.json updated.');
+  log(`${CATALOG_PATH} updated.`);
 }
 
 main().catch((err) => {

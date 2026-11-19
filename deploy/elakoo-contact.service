@@ -4,10 +4,10 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-User=deploy
-Group=deploy
+User=elakoo
+Group=elakoo
 WorkingDirectory=/opt/elakoo
-EnvironmentFile=/etc/elakoo/contact.env
+EnvironmentFile=/etc/elakoo/elakoo.env
 ExecStart=/usr/bin/node /opt/elakoo/server/contact-server.mjs
 Restart=always
 RestartSec=3

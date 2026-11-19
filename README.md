@@ -1,25 +1,24 @@
 # ELAKOO — сайт-каталог видео по греческому (A2 и B1)
 
-Статический сайт на [Astro](https://astro.build). Видео не хранятся на сайте: их список раз в 4 часа подтягивается из 8 плейлистов YouTube в файл `data/catalog.json`, после чего сайт пересобирается.
+Статический сайт на [Astro](https://astro.build). Видео на сайте не хранятся: сервер сам раз в 4 часа забирает список видео из 8 плейлистов YouTube, пересобирает сайт и публикует его. GitHub используется только как хранилище кода, откуда сервер берёт обновления.
 
-- **Хостинг:** ваш сервер `185.183.55.151` (Ubuntu/Debian): nginx отдаёт готовые страницы, HTTPS от Let's Encrypt.
-- **Публикация:** GitHub Actions (`deploy.yml`) собирает сайт и копирует его на сервер при каждом изменении.
-- **Автообновление:** `sync-youtube.yml` каждые 4 часа забирает видео с YouTube и, если что-то изменилось, сразу публикует сайт.
-- **Форма:** небольшой Node-сервер `server/contact-server.mjs` на том же сервере отправляет письма через [Resend](https://resend.com).
+- **Сервер:** `185.183.55.151` (Ubuntu/Debian). nginx отдаёт готовые страницы, HTTPS выдаёт Let's Encrypt.
+- **Обновление:** служба `elakoo-update` (каждые 4 часа и по команде `elakoo-update`): свежий код → синхронизация с YouTube → сборка → публикация. Если сборка не удалась, работающий сайт не трогается.
+- **Форма:** служба `elakoo-contact` (`server/contact-server.mjs`) отправляет письма через [Resend](https://resend.com).
 
 ## Структура
 
 | Путь | Что там |
 |---|---|
 | `config/elakoo.config.json` | **ID плейлистов, ссылка на канал, ручная разметка форматов.** Единственный файл, который нужно править. |
-| `data/catalog.json` | Снимок каталога. Заполняется автоматически, руками не править. |
+| `data/catalog.json` | Пустой каталог для разработки. На сервере каталог хранится в `/var/lib/elakoo/catalog.json`. |
 | `scripts/sync-youtube.mjs` | Синхронизация с YouTube Data API: все страницы плейлистов, определение Video/Short, сохранение последнего удачного каталога. |
 | `src/pages/` | Страницы: главная, `/a2/…` и `/b1/…` (8 разделов), `/videos/`, `/about/`, `/contact/`, `/privacy/`. |
 | `src/lib/sections.mjs` | Список 8 разделов. |
 | `src/styles/global.css` | Стили. Фирменные цвета задаются в начале файла (`:root`). |
 | `functions/api/contact.js` | Логика формы обратной связи (проверка, антиспам, отправка через Resend). |
 | `server/contact-server.mjs` | Запускает эту логику на сервере (служба `elakoo-contact`). |
-| `deploy/` | Настройка сервера: `server-setup.sh`, конфиг nginx, служба systemd. |
+| `deploy/` | Установщик сервера `install.sh`, скрипт обновления `update.sh`, конфиг nginx, службы systemd. |
 | `public/` | Favicon, картинка для соцсетей (`og-image.png`), `robots.txt`. |
 
 ## Как сайт решает, что Short, а что Video
@@ -27,65 +26,66 @@
 1. **Тематические плейлисты (8 штук)** определяют, в каком разделе показать ролик.
 2. **Служебный плейлист «ELAKOO – All Shorts»** (рекомендуется): каждый Short кладётся **и** в тематический плейлист, **и** в All Shorts. Ролики из All Shorts считаются Shorts, все остальные — обычными видео.
 3. **Ручная разметка** `formatOverrides` в конфиге важнее всего остального: `"VIDEO_ID": "short"` или `"VIDEO_ID": "video"`.
-4. Если плейлиста All Shorts нет (`shortsIndexPlaylistId: null`), новый ролик без ручной разметки **не показывается** на сайте, пока его не разметят. Список таких роликов выводится в логе синхронизации (GitHub → Actions → Sync YouTube catalog) и сохраняется в `data/catalog.json` → `needsClassification`.
+4. Если плейлиста All Shorts нет (`shortsIndexPlaylistId: null`), новый ролик без ручной разметки **не показывается** на сайте, пока его не разметят. Список таких роликов выводится в логе обновления (`journalctl -u elakoo-update`) и сохраняется в каталоге в поле `needsClassification`.
 
 Ролик, который есть только в All Shorts и нет ни в одном тематическом плейлисте, на сайте не показывается.
 
-## Первый запуск (владелец)
+## Установка на сервер (один раз)
 
-### 1. Заполнить конфиг
-В `config/elakoo.config.json` впишите:
-- `channelUrl`, например `"https://www.youtube.com/@elakoo_greek"`;
-- 8 ID плейлистов в `sectionPlaylists`. ID — это часть ссылки после `list=`, например `PLxxxxxxxx`;
-- `shortsIndexPlaylistId` — ID плейлиста All Shorts (или `null`).
+Нужно: DNS-записи A для `elakoo.com` и `www` → `185.183.55.151` и сервер на Ubuntu или Debian.
 
-Пока ID пустые (`null`), сайт работает и показывает «New videos are coming soon». Кнопки YouTube скрыты, пока не задан `channelUrl`.
+1. Подключитесь к серверу: `ssh root@185.183.55.151`.
+2. Выполните одну команду:
+   ```
+   curl -fsSL https://raw.githubusercontent.com/buninvik-cy/Elakoo/main/deploy/install.sh | bash
+   ```
+   Установщик поставит nginx, Node.js, certbot и файрвол, скачает код в `/opt/elakoo`, соберёт сайт, включит HTTPS и автообновление. Повторный запуск безопасен, например чтобы получить HTTPS после обновления DNS.
+3. Откройте https://elakoo.com.
 
-### 2. Домен → сервер
-В DNS домена (у регистратора или в Cloudflare) создайте две записи:
+## Ключи и настройки
 
-| Тип | Имя | Значение |
-|---|---|---|
-| A | `@` (elakoo.com) | `185.183.55.151` |
-| A | `www` | `185.183.55.151` |
+Все ключи хранятся в одном файле на сервере:
+```
+nano /etc/elakoo/elakoo.env
+```
+| Переменная | Что это |
+|---|---|
+| `YOUTUBE_API_KEY` | Ключ YouTube Data API v3 (см. ниже). Без него видео не подтягиваются. |
+| `RESEND_API_KEY` | Ключ Resend для отправки писем формы. |
+| `CONTACT_TO_EMAIL` | Куда приходят письма с формы. |
+| `CONTACT_FROM_EMAIL` | Отправитель, например `Elakoo website <no-reply@elakoo.com>` (домен подтверждается в Resend). |
 
-Если DNS в Cloudflare, поставьте у записей **Proxy status: DNS only** (серое облако), хотя бы на время получения сертификата.
+Сохранить в nano: `Ctrl+O`, `Enter`, выйти: `Ctrl+X`. Затем примените изменения:
+```
+systemctl restart elakoo-contact && elakoo-update
+```
 
-### 3. Настройка сервера (один раз, кнопкой в GitHub)
-1. GitHub → репозиторий → **Settings → Secrets and variables → Actions → New repository secret**:
-   - `SERVER_HOST` = `185.183.55.151`
-   - `SERVER_ROOT_PASSWORD` = пароль root от сервера
-2. **Actions → Server setup (one time) → Run workflow.** Скрипт поставит nginx, Node.js, файрвол, службу формы и, если домен уже смотрит на сервер, HTTPS-сертификат.
-3. Откройте лог запуска. Между строками `=====` будет ключ (от `-----BEGIN OPENSSH PRIVATE KEY-----` до `-----END…-----` включительно). Скопируйте его в новый секрет **`SERVER_SSH_KEY`**.
-4. Удалите лог этого запуска (страница запуска → `…` → Delete workflow run). После этого секрет `SERVER_ROOT_PASSWORD` можно удалить.
-5. **Actions → Deploy to server → Run workflow.** Сайт появится на сервере.
+**Ключ YouTube:** откройте [console.cloud.google.com](https://console.cloud.google.com) → создайте проект → APIs & Services → Library → **YouTube Data API v3** → Enable → Credentials → Create credentials → API key. В API restrictions оставьте только YouTube Data API v3.
 
-Если HTTPS не получился, потому что DNS ещё не обновился, подождите и снова запустите **Server setup**. Повторный запуск безопасен и новый ключ не создаёт.
+**Resend:** зарегистрируйтесь на resend.com → Domains → добавьте `elakoo.com` и DNS-записи, которые покажет Resend (их нужно добавить в GoDaddy) → API Keys → создайте ключ.
 
-### 4. Ключ YouTube API
-1. Откройте [console.cloud.google.com](https://console.cloud.google.com), создайте проект, затем APIs & Services → Library → **YouTube Data API v3** → Enable.
-2. Credentials → Create credentials → API key. В настройках ключа: API restrictions → только YouTube Data API v3.
-3. Добавьте GitHub-секрет `YOUTUBE_API_KEY` со значением ключа.
+Пока ключей формы нет, форма честно отвечает «not available right now», а не делает вид, что письмо отправлено.
 
-### Форма обратной связи (Resend)
-1. Зарегистрируйтесь на resend.com → Domains → добавьте `elakoo.com` и DNS-записи, которые покажет Resend.
-2. API Keys → создайте ключ.
-3. Добавьте GitHub-секреты: `RESEND_API_KEY`, `CONTACT_TO_EMAIL` (куда приходят письма), `CONTACT_FROM_EMAIL` (например `Elakoo website <no-reply@elakoo.com>`).
-4. Запустите **Deploy to server**: ключи запишутся на сервер в `/etc/elakoo/contact.env`.
+## Плейлисты
+ID плейлистов, ссылка на канал и ручная разметка форматов хранятся в `config/elakoo.config.json` в репозитории. После изменения сервер подхватит их при следующем обновлении (или сразу по команде `elakoo-update`).
 
-Пока ключей нет, форма честно отвечает «not available right now», а не делает вид, что письмо отправлено.
-
-### 5. Первая синхронизация
-GitHub → Actions → **Sync YouTube catalog** → Run workflow. Через 1–2 минуты в `data/catalog.json` появятся видео, и сайт сам опубликуется на сервере.
+## Полезные команды на сервере
+| Команда | Что делает |
+|---|---|
+| `elakoo-update` | Обновить сайт сейчас (код + видео + публикация) и показать лог. |
+| `journalctl -u elakoo-update -n 50` | Лог последних обновлений. |
+| `systemctl list-timers elakoo-update.timer` | Когда следующее автообновление. |
+| `journalctl -u elakoo-contact -n 50` | Лог формы обратной связи. |
+| `systemctl restart elakoo-contact` | Перезапустить форму после смены ключей. |
 
 ## Публикация новых видео (каждый раз)
 
 1. Загрузите видео на YouTube.
 2. Добавьте его в нужный тематический плейлист (например, A2 · Speaking Part 1).
 3. Если это Short, добавьте его ещё и в **ELAKOO – All Shorts**.
-4. Всё. В течение 4 часов видео появится на сайте. Чтобы быстрее — Actions → Sync YouTube catalog → Run workflow.
+4. Всё. В течение 4 часов видео появится на сайте. Чтобы быстрее, выполните на сервере `elakoo-update`.
 
-Удалили ролик из плейлиста — после следующей синхронизации он пропадёт из этого раздела.
+Удалили ролик из плейлиста — после следующего обновления он пропадёт из этого раздела.
 
 ## Компиляции (необязательно)
 Если длинное видео собрано из Shorts, можно показать под ним «Short clips in this compilation»:
@@ -95,10 +95,11 @@ GitHub → Actions → **Sync YouTube catalog** → Run workflow. Через 1�
 Связи задаются только вручную; по названиям сайт ничего не угадывает.
 
 ## Надёжность
-- Если YouTube API недоступен или вернул ошибку, `data/catalog.json` не меняется, и сайт продолжает показывать последний удачный каталог. Ошибка видна в GitHub → Actions (красный значок; GitHub также присылает письмо).
-- Если API вдруг вернул 0 видео, а раньше они были, синхронизация останавливается. Если плейлисты действительно опустели, запустите её вручную с галочкой `force`.
-- Ключ API хранится только в GitHub Secrets и в браузер не попадает.
-- На сервере GitHub заходит под отдельным пользователем `deploy` по SSH-ключу. Этот пользователь может только класть файлы сайта и перезапускать службу формы.
+- Если YouTube API недоступен или вернул ошибку, каталог не меняется, и сайт показывает последний удачный список видео.
+- Если API вдруг вернул 0 видео, а раньше они были, синхронизация останавливается. Если плейлисты действительно опустели: `touch /var/lib/elakoo/force-sync && elakoo-update`.
+- Если GitHub недоступен, сервер собирает сайт из уже скачанного кода. Видео при этом продолжают обновляться.
+- Сайт собирается во временную папку и публикуется, только если сборка прошла успешно.
+- Ключи лежат только на сервере (`/etc/elakoo/elakoo.env`, доступ только у root и службы) и в браузер не попадают.
 - nginx ограничивает частоту отправки формы. Дополнительно сервер формы пропускает не больше 5 писем в час с одного IP.
 
 ## Локальная разработка
@@ -107,7 +108,7 @@ npm install
 npm run dev        # http://localhost:4321
 npm test           # тесты логики каталога
 npm run build      # сборка в dist/
-YOUTUBE_API_KEY=... npm run sync   # синхронизация вручную
+YOUTUBE_API_KEY=... npm run sync   # синхронизация вручную (пишет в data/catalog.json)
 ```
 
 ## Что сделано сознательно просто

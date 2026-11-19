@@ -1,0 +1,10 @@
+[Unit]
+Description=Elakoo: update the site every 4 hours
+
+[Timer]
+OnCalendar=*-*-* 00/4:17:00
+RandomizedDelaySec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
