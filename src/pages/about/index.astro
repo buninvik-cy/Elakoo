@@ -1,0 +1,21 @@
+---
+import Base from '../../layouts/Base.astro';
+import { channelUrl } from '../../lib/data.mjs';
+---
+<Base title="About" description="Elakoo is a free collection of Greek A2 and B1 exam video practice.">
+  <div class="container narrow">
+    <header class="page-head">
+      <h1>About Elakoo</h1>
+    </header>
+    <div class="prose">
+      <p>Elakoo is a free collection of video practice for the Greek language exam at levels A2 and B1.</p>
+      <p>Every video is organised by exam section: Speaking Part 1, Speaking Part 2, Speaking Part 3 and Writing. Full videos and short vertical Shorts are shown separately, so you can choose a longer practice session or a quick review.</p>
+      <p>All videos are published on our YouTube channel. You can watch them here on the site or open them on YouTube.</p>
+      <p class="actions">
+        <a class="btn btn-primary" href="/videos/">Explore videos</a>
+        {channelUrl && <a class="btn btn-ghost" href={channelUrl} target="_blank" rel="noopener noreferrer">YouTube channel ↗</a>}
+        <a class="btn btn-ghost" href="/contact/">Contact us</a>
+      </p>
+    </div>
+  </div>
+</Base>

@@ -1,0 +1,49 @@
+name: Sync YouTube catalog
+
+# Runs every 4 hours and can be started by hand ("Run workflow" = "Sync now").
+# If anything changed, it commits data/catalog.json; the commit triggers a new deploy.
+on:
+  schedule:
+    - cron: '17 */4 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Write the result even if it is empty (use only if you really emptied the playlists)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: youtube-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Sync from YouTube
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: node scripts/sync-youtube.mjs ${{ inputs.force && '--force' || '' }}
+      - name: Check the site still builds
+        run: npm run build
+      - name: Commit catalog if changed
+        run: |
+          if git diff --quiet -- data/catalog.json; then
+            echo "Catalog unchanged."
+            exit 0
+          fi
+          git config user.name "elakoo-sync-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/catalog.json
+          git commit -m "Sync YouTube catalog"
+          git push

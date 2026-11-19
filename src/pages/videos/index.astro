@@ -1,0 +1,144 @@
+---
+import Base from '../../layouts/Base.astro';
+import VideoCard from '../../components/VideoCard.astro';
+import { LEVELS, SECTION_TYPES } from '../../lib/sections.mjs';
+import { allOfFormat } from '../../lib/data.mjs';
+
+const videos = allOfFormat('video');
+const shorts = allOfFormat('short');
+---
+<Base title="All Videos" description="All free Greek A2 and B1 exam practice videos and Shorts from Elakoo, by level and exam section.">
+  <div class="container">
+    <header class="page-head">
+      <h1>All Videos</h1>
+      <p class="lead">Greek A2 &amp; B1 exam practice. Filter by level and exam section.</p>
+    </header>
+
+    <div class="tabs" role="tablist" aria-label="Format">
+      <button role="tab" id="tab-video" aria-controls="panel-video" aria-selected="true" data-tab="video">Videos <span class="count">{videos.length}</span></button>
+      <button role="tab" id="tab-short" aria-controls="panel-short" aria-selected="false" data-tab="short" tabindex="-1">Shorts <span class="count">{shorts.length}</span></button>
+    </div>
+
+    <form class="filters" data-filters onsubmit="return false">
+      <label><span>Level</span>
+        <select name="level">
+          <option value="">All</option>
+          {LEVELS.map((l) => <option value={l.slug}>{l.label}</option>)}
+        </select>
+      </label>
+      <label><span>Section</span>
+        <select name="section">
+          <option value="">All</option>
+          {SECTION_TYPES.map((s) => <option value={s.slug}>{s.label}</option>)}
+        </select>
+      </label>
+      <label><span>Sort</span>
+        <select name="sort">
+          <option value="newest">Newest</option>
+          <option value="oldest">Oldest</option>
+        </select>
+      </label>
+      <label class="grow"><span>Search</span>
+        <input type="search" name="q" placeholder="Search by title" />
+      </label>
+    </form>
+
+    <section id="panel-video" role="tabpanel" aria-labelledby="tab-video" data-panel="video">
+      {videos.length
+        ? <div class="grid-videos" data-grid>{videos.map((item) => <VideoCard item={item} />)}</div>
+        : <p class="empty">New videos are coming soon.</p>}
+      <p class="empty" data-no-results hidden>No videos match these filters.</p>
+      <button type="button" class="btn btn-ghost load-more" data-load-more hidden>Load more</button>
+    </section>
+
+    <section id="panel-short" role="tabpanel" aria-labelledby="tab-short" data-panel="short" hidden>
+      {shorts.length
+        ? <div class="grid-shorts" data-grid>{shorts.map((item) => <VideoCard item={item} />)}</div>
+        : <p class="empty">Shorts are coming soon.</p>}
+      <p class="empty" data-no-results hidden>No Shorts match these filters.</p>
+      <button type="button" class="btn btn-ghost load-more" data-load-more hidden>Load more</button>
+    </section>
+  </div>
+</Base>
+<script>
+  const PAGE = 24;
+  const form = document.querySelector<HTMLFormElement>('[data-filters]')!;
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>('[data-tab]')];
+  const panels = [...document.querySelectorAll<HTMLElement>('[data-panel]')];
+  let shown = PAGE;
+
+  const state = () => {
+    const p = new URLSearchParams(location.search);
+    return {
+      format: p.get('format') === 'short' ? 'short' : 'video',
+      level: p.get('level') || '',
+      section: p.get('section') || '',
+      sort: p.get('sort') === 'oldest' ? 'oldest' : 'newest',
+      q: p.get('q') || '',
+    };
+  };
+
+  function writeUrl(s: ReturnType<typeof state>) {
+    const p = new URLSearchParams();
+    if (s.format !== 'video') p.set('format', s.format);
+    if (s.level) p.set('level', s.level);
+    if (s.section) p.set('section', s.section);
+    if (s.sort !== 'newest') p.set('sort', s.sort);
+    if (s.q) p.set('q', s.q);
+    const qs = p.toString();
+    history.replaceState(null, '', location.pathname + (qs ? `?${qs}` : ''));
+  }
+
+  function render() {
+    const s = state();
+    (form.elements.namedItem('level') as HTMLSelectElement).value = s.level;
+    (form.elements.namedItem('section') as HTMLSelectElement).value = s.section;
+    (form.elements.namedItem('sort') as HTMLSelectElement).value = s.sort;
+    const qInput = form.elements.namedItem('q') as HTMLInputElement;
+    if (document.activeElement !== qInput) qInput.value = s.q;
+
+    tabs.forEach((t) => {
+      const on = t.dataset.tab === s.format;
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+    });
+    panels.forEach((panel) => {
+      panel.hidden = panel.dataset.panel !== s.format;
+      const grid = panel.querySelector<HTMLElement>('[data-grid]');
+      if (!grid) return;
+      const cards = [...grid.querySelectorAll<HTMLElement>('.card')];
+      cards.sort((a, b) => {
+        const d = (a.dataset.published || '').localeCompare(b.dataset.published || '');
+        return s.sort === 'oldest' ? d : -d;
+      }).forEach((c) => grid.appendChild(c));
+      const q = s.q.toLowerCase();
+      const match = cards.filter((c) =>
+        (!s.level || c.dataset.levels!.split(' ').includes(s.level)) &&
+        (!s.section || c.dataset.sections!.split(' ').includes(s.section)) &&
+        (!q || c.dataset.title!.includes(q)),
+      );
+      const set = new Set(match.slice(0, shown));
+      cards.forEach((c) => (c.hidden = !set.has(c)));
+      panel.querySelector<HTMLElement>('[data-no-results]')!.hidden = match.length > 0 || cards.length === 0;
+      panel.querySelector<HTMLElement>('[data-load-more]')!.hidden = match.length <= shown;
+    });
+  }
+
+  tabs.forEach((t) => t.addEventListener('click', () => {
+    const s = state(); s.format = t.dataset.tab as 'video' | 'short'; shown = PAGE; writeUrl(s); render();
+  }));
+  tabs.forEach((t, i) => t.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+    next.focus(); next.click();
+  }));
+  form.addEventListener('input', () => {
+    const s = state();
+    const f = new FormData(form);
+    s.level = String(f.get('level') || ''); s.section = String(f.get('section') || '');
+    s.sort = f.get('sort') === 'oldest' ? 'oldest' : 'newest'; s.q = String(f.get('q') || '').trim();
+    shown = PAGE; writeUrl(s); render();
+  });
+  document.querySelectorAll('[data-load-more]').forEach((b) => b.addEventListener('click', () => { shown += PAGE; render(); }));
+  render();
+</script>

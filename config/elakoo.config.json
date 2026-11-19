@@ -1,0 +1,18 @@
+{
+  "siteUrl": "https://elakoo.com",
+  "channelUrl": null,
+  "sectionPlaylists": {
+    "a2-speaking-part-1": null,
+    "a2-speaking-part-2": null,
+    "a2-speaking-part-3": null,
+    "a2-writing": null,
+    "b1-speaking-part-1": null,
+    "b1-speaking-part-2": null,
+    "b1-speaking-part-3": null,
+    "b1-writing": null
+  },
+  "shortsIndexPlaylistId": null,
+  "formatOverrides": {},
+  "compilations": {},
+  "syncIntervalHours": 4
+}

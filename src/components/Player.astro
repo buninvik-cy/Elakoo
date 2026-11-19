@@ -1,0 +1,102 @@
+---
+// Player for a section page. Nothing from YouTube loads until the visitor presses Play.
+// Selected video comes from ?v=VIDEO_ID or from clicking a card on this page.
+import { compilationShorts } from '../lib/data.mjs';
+import VideoCard from './VideoCard.astro';
+interface Props {
+  items: any[];
+  context: { level: string; section: string };
+}
+const { items, context } = Astro.props;
+const lite = items.map((i) => ({
+  id: i.youtubeId, title: i.title, format: i.format, thumb: i.thumbnail, url: i.youtubeUrl, embeddable: i.isEmbeddable,
+}));
+const withCompilations = items.filter((i) => i.format === 'video').map((i) => ({ id: i.youtubeId, shorts: compilationShorts(i.youtubeId) })).filter((c) => c.shorts.length);
+---
+<section class="player" id="player" hidden aria-label="Video player">
+  <div class="player-frame" data-frame></div>
+  <div class="player-info">
+    <h2 class="player-title" data-title></h2>
+    <a class="btn btn-ghost" data-yt href="#" target="_blank" rel="noopener noreferrer" data-track="open-youtube">Watch on YouTube ↗</a>
+  </div>
+  {withCompilations.map((c) => (
+    <div class="compilation" data-compilation-for={c.id} hidden>
+      <h3>Short clips in this compilation</h3>
+      <div class="shorts-row">{c.shorts.map((s) => <VideoCard item={s} context={context} showLabels={false} />)}</div>
+    </div>
+  ))}
+</section>
+<script is:inline type="application/json" id="player-data" set:html={JSON.stringify(lite)}></script>
+<script>
+  type Lite = { id: string; title: string; format: 'video' | 'short'; thumb: string | null; url: string; embeddable: boolean };
+  const items: Lite[] = JSON.parse(document.getElementById('player-data')!.textContent || '[]');
+  const byId = new Map(items.map((i) => [i.id, i]));
+  const player = document.getElementById('player')!;
+  const frame = player.querySelector<HTMLElement>('[data-frame]')!;
+  const titleEl = player.querySelector<HTMLElement>('[data-title]')!;
+  const ytLink = player.querySelector<HTMLAnchorElement>('[data-yt]')!;
+
+  function embed(item: Lite) {
+    frame.innerHTML = '';
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.id)}?autoplay=1&rel=0&playsinline=1`;
+    iframe.title = item.title;
+    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+    iframe.allowFullscreen = true;
+    iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+    frame.appendChild(iframe);
+  }
+
+  function preview(item: Lite) {
+    frame.innerHTML = '';
+    if (!item.embeddable) {
+      const p = document.createElement('div');
+      p.className = 'player-fallback';
+      p.innerHTML = '<p>This video can only be watched on YouTube.</p>';
+      const a = document.createElement('a');
+      a.className = 'btn btn-primary'; a.href = item.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      a.textContent = 'Watch on YouTube ↗';
+      p.appendChild(a);
+      frame.appendChild(p);
+      return;
+    }
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'player-preview';
+    b.setAttribute('aria-label', `Play "${item.title}"`);
+    if (item.thumb) { const img = document.createElement('img'); img.src = item.thumb; img.alt = ''; b.appendChild(img); }
+    const icon = document.createElement('span'); icon.className = 'play-big'; icon.innerHTML = '<svg viewBox="0 0 24 24" width="34" height="34"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
+    b.appendChild(icon);
+    b.addEventListener('click', () => embed(item));
+    frame.appendChild(b);
+  }
+
+  function select(id: string, play: boolean) {
+    const item = byId.get(id);
+    if (!item) return false;
+    player.hidden = false;
+    player.dataset.format = item.format;
+    titleEl.textContent = item.title;
+    ytLink.href = item.url;
+    player.querySelectorAll<HTMLElement>('[data-compilation-for]').forEach((c) => (c.hidden = c.dataset.compilationFor !== id));
+    if (play && item.embeddable) embed(item); else preview(item);
+    document.querySelectorAll('.card.is-selected').forEach((c) => c.classList.remove('is-selected'));
+    document.querySelectorAll(`.card[data-video-id="${CSS.escape(id)}"]`).forEach((c) => c.classList.add('is-selected'));
+    return true;
+  }
+
+  const initial = new URLSearchParams(location.search).get('v');
+  if (initial && select(initial, false)) player.scrollIntoView({ block: 'start' });
+
+  document.addEventListener('click', (e) => {
+    const link = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[data-play]');
+    if (!link || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    const id = link.dataset.play!;
+    if (!byId.has(id)) return; // not in this section -> normal navigation
+    e.preventDefault();
+    select(id, true);
+    const url = new URL(location.href); url.searchParams.set('v', id);
+    history.replaceState(null, '', url);
+    player.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+</script>

@@ -1,0 +1,35 @@
+---
+import { channelUrl } from '../lib/data.mjs';
+const links = [
+  { href: '/#a2', label: 'A2' },
+  { href: '/#b1', label: 'B1' },
+  { href: '/videos/', label: 'All Videos' },
+  { href: '/about/', label: 'About' },
+  { href: '/contact/', label: 'Contact' },
+];
+---
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="logo" href="/" aria-label="ELAKOO home">elakoo</a>
+    <button class="burger" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <nav id="site-nav" class="site-nav" aria-label="Main">
+      {links.map((l) => <a href={l.href}>{l.label}</a>)}
+      {channelUrl && <a href={channelUrl} target="_blank" rel="noopener noreferrer" data-track="youtube-channel">YouTube</a>}
+    </nav>
+  </div>
+</header>
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('.burger');
+  const nav = document.getElementById('site-nav');
+  btn?.addEventListener('click', () => {
+    const open = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!open));
+    nav?.classList.toggle('open', !open);
+  });
+  nav?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => {
+    btn?.setAttribute('aria-expanded', 'false');
+    nav.classList.remove('open');
+  }));
+</script>

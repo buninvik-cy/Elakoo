@@ -1,0 +1,21 @@
+{
+  "name": "elakoo-site",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "ELAKOO - free A2 & B1 Greek exam video practice (YouTube catalog)",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "sync": "node scripts/sync-youtube.mjs",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.6",
+    "astro": "^7.4.13"
+  }
+}

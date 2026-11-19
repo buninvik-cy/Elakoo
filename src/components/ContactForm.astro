@@ -1,0 +1,82 @@
+---
+// Posts to /api/contact (Cloudflare Pages Function in functions/api/contact.js).
+// Shows "sent" only after the server confirms the email provider accepted the message.
+interface Props { compact?: boolean }
+const { compact = false } = Astro.props;
+const uid = compact ? 'cf-home' : 'cf-page';
+---
+<form class:list={['contact-form', { compact }]} method="post" action="/api/contact" data-contact-form novalidate>
+  <div class="form-row two">
+    <label>
+      <span>Name *</span>
+      <input name="name" id={`${uid}-name`} required maxlength="100" autocomplete="name" />
+    </label>
+    <label>
+      <span>Email *</span>
+      <input name="email" id={`${uid}-email`} type="email" required maxlength="200" autocomplete="email" />
+    </label>
+  </div>
+  <label>
+    <span>Subject</span>
+    <select name="subject" id={`${uid}-subject`}>
+      <option>General question</option>
+      <option>Suggest a video</option>
+      <option>Report a problem</option>
+      <option>Other</option>
+    </select>
+  </label>
+  <label>
+    <span>Message *</span>
+    <textarea name="message" id={`${uid}-message`} required minlength="10" maxlength="5000" rows={compact ? 4 : 6}></textarea>
+  </label>
+  <!-- Honeypot: humans never see or fill this field. -->
+  <div class="hp" aria-hidden="true">
+    <label>Website <input name="website" tabindex="-1" autocomplete="off" /></label>
+  </div>
+  <input type="hidden" name="ts" value="" />
+  <p class="form-note">By sending, you agree that we use your name and email only to reply. See the <a href="/privacy/">Privacy Policy</a>.</p>
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">Send message</button>
+    <p class="form-status" role="status" aria-live="polite"></p>
+  </div>
+</form>
+<script>
+  document.querySelectorAll<HTMLFormElement>('[data-contact-form]').forEach((form) => {
+    const ts = form.querySelector<HTMLInputElement>('input[name="ts"]');
+    if (ts) ts.value = String(Date.now());
+    const status = form.querySelector<HTMLElement>('.form-status')!;
+    const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      status.className = 'form-status';
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+      button.disabled = true;
+      status.textContent = 'Sending…';
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(Object.fromEntries(new FormData(form))),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok) {
+          status.textContent = 'Thank you! Your message has been sent.';
+          status.classList.add('ok');
+          form.reset();
+          if (ts) ts.value = String(Date.now());
+        } else {
+          status.textContent = data.error || 'Sorry, the message could not be sent. Please try again later.';
+          status.classList.add('error');
+        }
+      } catch {
+        status.textContent = 'Network error. Your text is kept - please try again.';
+        status.classList.add('error');
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+</script>

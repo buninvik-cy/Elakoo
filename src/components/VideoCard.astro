@@ -1,0 +1,40 @@
+---
+// One card. format 'video' -> 16:9, 'short' -> 9:16. Never mix in one grid.
+import { labels, formatDuration, watchHref } from '../lib/data.mjs';
+interface Props {
+  item: any;
+  context?: { level: string; section: string };
+  showLabels?: boolean;
+}
+const { item, context, showLabels = true } = Astro.props;
+const isShort = item.format === 'short';
+const href = watchHref(item, context);
+const cats = labels(item);
+const levels = [...new Set(item.memberships.map((m: any) => m.level))].join(' ');
+const sections = [...new Set(item.memberships.map((m: any) => m.section))].join(' ');
+---
+<article
+  class:list={['card', isShort ? 'card-short' : 'card-video']}
+  data-video-id={item.youtubeId}
+  data-levels={levels}
+  data-sections={sections}
+  data-published={item.publishedAt}
+  data-title={item.title.toLowerCase()}
+>
+  <a class="card-link" href={href} data-play={item.youtubeId} data-track="open-video">
+    <div class="thumb">
+      {item.thumbnail
+        ? <img src={item.thumbnail} alt="" loading="lazy" decoding="async" />
+        : <div class="thumb-empty" aria-hidden="true"></div>}
+      <span class="play-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>
+      </span>
+      {!isShort && item.durationSeconds != null && <span class="duration">{formatDuration(item.durationSeconds)}</span>}
+    </div>
+    <h3 class="card-title">{item.title}</h3>
+  </a>
+  <div class="card-meta">
+    {showLabels && cats.map((c) => <span class="tag">{c}</span>)}
+    <a class="yt-link" href={item.youtubeUrl} target="_blank" rel="noopener noreferrer" data-track="open-youtube" aria-label={`Watch "${item.title}" on YouTube`}>YouTube ↗</a>
+  </div>
+</article>

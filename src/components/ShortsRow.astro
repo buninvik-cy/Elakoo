@@ -1,0 +1,42 @@
+---
+// Horizontal strip of 9:16 Shorts, scrollable by mouse (arrows), touch and keyboard.
+// With expandable=true there is a "Show all Shorts" toggle that turns it into a grid.
+import VideoCard from './VideoCard.astro';
+interface Props {
+  items: any[];
+  context?: { level: string; section: string };
+  expandable?: boolean;
+  showLabels?: boolean;
+  label: string;
+}
+const { items, context, expandable = false, showLabels = true, label } = Astro.props;
+---
+<div class="shorts-wrap" data-shorts-wrap>
+  <div class="shorts-controls">
+    <button type="button" class="arrow" data-dir="-1" aria-label="Scroll Shorts left">‹</button>
+    <button type="button" class="arrow" data-dir="1" aria-label="Scroll Shorts right">›</button>
+  </div>
+  <div class="shorts-row" role="region" aria-label={label} tabindex="0">
+    {items.map((item) => <VideoCard item={item} context={context} showLabels={showLabels} />)}
+  </div>
+  {expandable && items.length > 4 && (
+    <button type="button" class="btn btn-ghost show-all" data-show-all aria-expanded="false">Show all Shorts</button>
+  )}
+</div>
+<script>
+  document.querySelectorAll<HTMLElement>('[data-shorts-wrap]').forEach((wrap) => {
+    const row = wrap.querySelector<HTMLElement>('.shorts-row')!;
+    wrap.querySelectorAll<HTMLButtonElement>('.arrow').forEach((b) =>
+      b.addEventListener('click', () => row.scrollBy({ left: Number(b.dataset.dir) * row.clientWidth * 0.8, behavior: 'smooth' })),
+    );
+    const check = () => wrap.classList.toggle('no-overflow', row.scrollWidth <= row.clientWidth + 2);
+    check();
+    addEventListener('resize', check);
+    const toggle = wrap.querySelector<HTMLButtonElement>('[data-show-all]');
+    toggle?.addEventListener('click', () => {
+      const open = wrap.classList.toggle('expanded');
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.textContent = open ? 'Show less' : 'Show all Shorts';
+    });
+  });
+</script>
