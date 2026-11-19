@@ -1,6 +1,6 @@
 /* ELAKOO - light, minimal. Brand colours in :root; replace with final brand codes. */
 :root {
-  --blue: #1f5fc9;
+  --blue: #0050a8;
   --blue-dark: #174a9e;
   --blue-soft: #eaf1fd;
   --blue-softer: #f5f8fe;
@@ -281,7 +281,7 @@ select:focus, input:focus, textarea:focus { border-color: var(--blue); outline: 
 :root {
   --blue: #0050a8;
   --blue-dark: #003f86;
-  --accent: #2e86de;
+  --accent: #2272c0;
   --ink: #1d1d1f;
   --muted: #5f6470;
   --line: #e3e5ea;
@@ -476,3 +476,6 @@ a { color: var(--blue); }
 /* Subscribe buttons back to brand blue (play icon stays) */
 .btn-sub { background: var(--blue); }
 .btn-sub:hover { background: var(--blue-dark); }
+/* Light blue for the selected level and "See all / YouTube" links; everything else brand blue */
+.level-capsule .level-tab[aria-selected="true"], .level-capsule .level-tab[aria-selected="true"]:hover { color: var(--accent); }
+.shelf-links a { color: var(--accent); }

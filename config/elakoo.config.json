@@ -17,7 +17,7 @@
     {
       "slug": "a1",
       "label": "A1",
-      "color": "#28843c",
+      "color": null,
       "playlists": [
         {
           "slug": "speaking-part-1",
@@ -67,7 +67,7 @@
     {
       "slug": "a2",
       "label": "A2",
-      "color": "#1976d2",
+      "color": null,
       "playlists": [
         {
           "slug": "speaking-part-1",
@@ -117,7 +117,7 @@
     {
       "slug": "b1",
       "label": "B1",
-      "color": "#b71c1c",
+      "color": null,
       "playlists": [
         {
           "slug": "speaking-part-1",
