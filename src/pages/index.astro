@@ -36,7 +36,7 @@ const latestVideos = latest('video', 6);
       <h2 id="levels-h">Choose your level</h2>
       <div class="level-tabs" role="tablist" aria-label="Level">
         {levels.map((l) => (
-          <a role="tab" class="level-tab" id={`tab-${l.slug}`} href={`/?level=${l.slug}#levels`} aria-controls={`panel-${l.slug}`} data-level-tab={l.slug} data-track="choose-level">
+          <a role="tab" class="level-tab" data-lv={l.slug} id={`tab-${l.slug}`} href={`/?level=${l.slug}#levels`} aria-controls={`panel-${l.slug}`} data-level-tab={l.slug} data-track="choose-level">
             {l.label}
             {!l.live && <span class="soon-dot">soon</span>}
           </a>

@@ -12,7 +12,7 @@ if (sum.videos) parts.push(`${sum.videos} video${sum.videos === 1 ? '' : 's'}`);
 if (sum.shorts) parts.push(`${sum.shorts} Short${sum.shorts === 1 ? '' : 's'}`);
 const meta = live ? (parts.join(' · ') || 'New videos soon') : 'Coming soon';
 ---
-<article class:list={['pl-card', { 'is-soon': !live }]}>
+<article class:list={['pl-card', { 'is-soon': !live }]} data-lv={s.level}>
   {live ? (
     <a class="pl-cover" href={s.path} data-track="open-playlist-page" tabindex="-1" aria-hidden="true">
       {sum.cover ? <img src={sum.cover} alt="" loading="lazy" decoding="async" /> : <span class="pl-cover-text">{s.sectionLabel}</span>}

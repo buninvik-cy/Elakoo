@@ -237,3 +237,15 @@ select:focus, input:focus, textarea:focus { border-color: var(--blue); outline: 
 .chip.soon { color: #9aa7bd; border-style: dashed; }
 
 .about-strip p { max-width: 760px; }
+
+/* ---- Level colours: --lv is set per level from config (levels[].color) ---- */
+[data-lv] { --lv-c: var(--lv, var(--blue)); }
+.level-tab[aria-selected="true"] { background: var(--lv-c); border-color: var(--lv-c); }
+.level-tab:hover { border-color: var(--lv-c); color: var(--lv-c); }
+.level-tab[aria-selected="true"]:hover { color: #fff; }
+.pl-card:not(.is-soon) .pl-level { background: var(--lv-c); }
+.pl-card:not(.is-soon) .pl-cover { background: linear-gradient(135deg, color-mix(in srgb, var(--lv-c) 14%, #fff), color-mix(in srgb, var(--lv-c) 26%, #fff)); }
+.pl-card:not(.is-soon) .pl-cover-text { color: var(--lv-c); }
+.lv-badge { display: inline-block; background: var(--lv-c); color: #fff; border-radius: 12px; padding: 0 .35em; }
+.chips .chip.on { background: var(--lv-c); border-color: var(--lv-c); }
+.tag[data-lv] { color: var(--lv-c); background: color-mix(in srgb, var(--lv-c) 12%, #fff); }

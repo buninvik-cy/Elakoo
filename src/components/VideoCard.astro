@@ -34,7 +34,7 @@ const sections = [...new Set(item.memberships.map((m: any) => m.section))].join(
     <h3 class="card-title">{item.title}</h3>
   </a>
   <div class="card-meta">
-    {showLabels && cats.map((c) => <span class="tag">{c}</span>)}
+    {showLabels && item.memberships.map((m: any, i: number) => <span class="tag" data-lv={m.level}>{cats[i]}</span>)}
     <a class="yt-link" href={item.youtubeUrl} target="_blank" rel="noopener noreferrer" data-track="open-youtube" aria-label={`Watch "${item.title}" on YouTube`}>YouTube ↗</a>
   </div>
 </article>

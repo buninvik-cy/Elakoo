@@ -12,7 +12,10 @@ const isReal = (id) => typeof id === 'string' && id.length > 0 && !id.startsWith
 export const GROUPS = config.groups || [];
 
 /** Levels in config order: { slug, label } */
-export const LEVELS = (config.levels || []).map(({ slug, label }) => ({ slug, label }));
+const HEX = /^#[0-9a-f]{6}$/i;
+// Optional level colour (e.g. from the textbook covers); falls back to the brand blue.
+export const LEVELS = (config.levels || []).map(({ slug, label, color }) => ({ slug, label, color: HEX.test(color || '') ? color : null }));
+export const levelColor = (slug) => LEVELS.find((l) => l.slug === slug)?.color || null;
 
 /** Every configured playlist ("section"), with or without an ID. */
 export const ALL_SECTIONS = (config.levels || []).flatMap((level) =>

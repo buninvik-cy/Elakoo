@@ -25,13 +25,13 @@ const siblings = ALL_SECTIONS.filter((x) => x.level === s.level);
       <a href={`/?level=${s.level}#levels`}>{s.levelLabel}</a> <span aria-hidden="true">/</span>
       <span aria-current="page">{s.sectionLabel}</span>
     </nav>
-    <header class="page-head">
-      <h1>{s.levelLabel} · {s.sectionLabel}</h1>
+    <header class="page-head" data-lv={s.level}>
+      <h1><span class="lv-badge">{s.levelLabel}</span> {s.sectionLabel}</h1>
       <p class="lead">{s.description}</p>
       {plUrl && <a class="btn btn-ghost" href={plUrl} target="_blank" rel="noopener noreferrer" data-track="open-playlist">Open playlist on YouTube ↗</a>}
     </header>
 
-    <nav class="chips" aria-label={`${s.levelLabel} sections`}>
+    <nav class="chips" data-lv={s.level} aria-label={`${s.levelLabel} sections`}>
       {siblings.map((x) => x.playlistId
         ? <a class:list={['chip', { on: x.key === s.key }]} href={x.path} aria-current={x.key === s.key ? 'page' : undefined}>{x.sectionLabel}</a>
         : <span class="chip soon" title="Coming soon">{x.sectionLabel}</span>)}

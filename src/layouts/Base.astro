@@ -2,6 +2,8 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import { LEVELS } from '../lib/sections.mjs';
+const levelCss = LEVELS.filter((l) => l.color).map((l) => `[data-lv="${l.slug}"]{--lv:${l.color}}`).join('');
 
 interface Props {
   title: string;
@@ -32,6 +34,7 @@ const ogImage = new URL('/og-image.png', Astro.site);
     <meta name="theme-color" content="#1f5fc9" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
+    {levelCss && <style set:html={levelCss}></style>}
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
