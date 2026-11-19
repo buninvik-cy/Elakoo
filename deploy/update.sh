@@ -28,7 +28,8 @@ NEW="$(git rev-parse HEAD)"
 
 if [ ! -d node_modules ] || { [ "$OLD" != "$NEW" ] && ! git diff --quiet "$OLD" "$NEW" -- package.json package-lock.json; }; then
   log "Installing dependencies"
-  npm ci --no-audit --no-fund --loglevel=error
+  npm ci --no-audit --no-fund --loglevel=error --fetch-retries=5 --fetch-timeout=120000 \
+    || { log "npm failed, retrying once"; sleep 10; npm ci --no-audit --no-fund --loglevel=error --fetch-retries=5 --fetch-timeout=120000; }
 fi
 
 # 2. Videos

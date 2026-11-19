@@ -8,6 +8,8 @@ Type=oneshot
 User=elakoo
 Group=elakoo
 EnvironmentFile=/etc/elakoo/elakoo.env
+# Prefer IPv4: many VPS have broken IPv6 routes, which makes npm/YouTube requests fail.
+Environment=NODE_OPTIONS=--dns-result-order=ipv4first
 ExecStart=/opt/elakoo/deploy/update.sh
 # Runs as root ("+") only to restart the contact service when its code changed.
 ExecStartPost=+/bin/sh -c 'if [ -f /var/lib/elakoo/restart-contact ]; then rm -f /var/lib/elakoo/restart-contact; systemctl restart elakoo-contact; fi'
