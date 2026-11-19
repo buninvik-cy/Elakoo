@@ -59,7 +59,7 @@ else
   rm -rf "$APP" && install -d -o elakoo -g elakoo "$APP"
   runuser -u elakoo -- git clone -q --depth 50 "$REPO" "$APP"
 fi
-git -C "$APP" log -1 --format='%h %s'
+runuser -u elakoo -- git -C "$APP" log -1 --format='%h %s'
 
 say "Services"
 install -m 755 /dev/stdin /usr/local/bin/elakoo-update <<'EOF'
