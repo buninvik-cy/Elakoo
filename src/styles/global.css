@@ -463,3 +463,13 @@ a { color: var(--blue); }
 }
 @media (max-width: 1000px) { .char-left, .char-right { bottom: 16px; } }
 @media (max-width: 560px) { .char-left, .char-right { bottom: 12px; } }
+/* Red YouTube subscribe button (#CC0000: white text stays readable, AA contrast) */
+.btn-sub { display: inline-flex; align-items: center; gap: 8px; background: #cc0000; color: #fff !important; text-decoration: none; font-weight: 800; border-radius: 999px; white-space: nowrap; transition: background .15s; }
+.btn-sub:hover { background: #a80000; color: #fff; }
+.btn-sub-icon { width: 1.25em; height: 1.25em; flex: none; }
+.btn-sub-lg { font-size: 1.05rem; padding: 13px 26px 13px 20px; min-height: 48px; }
+.btn-sub-sm { font-size: .9rem; padding: 7px 14px 7px 10px; min-height: 36px; }
+@media (max-width: 760px) { .site-nav .btn-sub { align-self: flex-start; margin: 12px 0 4px; padding: 10px 16px 10px 12px; } }
+.site-nav { align-items: center; }
+@media (max-width: 760px) { .site-nav { background: #fff; align-items: stretch; } .site-nav a { padding: 13px 0; } }
+@media (max-width: 760px) { .site-nav { gap: 0; padding-bottom: 14px; } }

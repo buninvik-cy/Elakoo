@@ -1,5 +1,6 @@
 ---
 import { channelUrl } from '../lib/data.mjs';
+import SubscribeButton from './SubscribeButton.astro';
 import { LEVELS } from '../lib/sections.mjs';
 const links = [
   ...LEVELS.map((l) => ({ href: `/?level=${l.slug}#levels`, label: l.label })),
@@ -16,7 +17,7 @@ const links = [
     </button>
     <nav id="site-nav" class="site-nav" aria-label="Main">
       {links.map((l) => <a href={l.href}>{l.label}</a>)}
-      {channelUrl && <a href={channelUrl} target="_blank" rel="noopener noreferrer" data-track="youtube-channel">YouTube</a>}
+      <SubscribeButton size="sm" label="Subscribe" />
     </nav>
   </div>
 </header>
