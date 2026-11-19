@@ -479,3 +479,20 @@ a { color: var(--blue); }
 /* Light blue for the selected level and "See all / YouTube" links; everything else brand blue */
 .level-capsule .level-tab[aria-selected="true"], .level-capsule .level-tab[aria-selected="true"]:hover { color: var(--accent); }
 .shelf-links a { color: var(--accent); }
+
+/* ---- Hero brand lockup: mark | Elakoo! / Έλα, άκου! + pill ---- */
+.brand-lockup {
+  --wh: clamp(48px, 8.4vw, 104px);          /* wordmark height */
+  --sub: clamp(1.3rem, 2.9vw, 2.3rem);       /* "Έλα, άκου!" size */
+  display: grid; grid-template-columns: auto auto auto; grid-template-areas: "mark word word" "mark ela pill";
+  column-gap: clamp(12px, 2vw, 24px); row-gap: 4px; align-items: center; justify-content: center; text-align: left;
+}
+.lockup-mark { grid-area: mark; height: calc(var(--wh) + 4px + 1.2 * var(--sub)); width: auto; align-self: end; }
+.lockup-word { grid-area: word; height: var(--wh); width: auto; }
+.lockup-ela { grid-area: ela; font-size: var(--sub); line-height: 1.2; white-space: nowrap; }
+.lockup-pill { grid-area: pill; justify-self: start; margin: 0; white-space: nowrap; }
+.hero h1 { font-size: clamp(1.9rem, 4.4vw, 3.2rem); margin-top: clamp(10px, 2vw, 22px); }
+@media (max-width: 700px) {
+  .brand-lockup { grid-template-columns: auto auto; grid-template-areas: "mark word" "mark ela" "pill pill"; }
+  .lockup-pill { justify-self: center; margin-top: 12px; }
+}
