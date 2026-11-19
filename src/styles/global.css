@@ -448,3 +448,18 @@ a { color: var(--blue); }
 .ela { margin: 0; color: var(--blue); font-family: 'Manrope Variable', var(--font); font-weight: 800; font-size: clamp(1.6rem, 3.6vw, 2.4rem); letter-spacing: -.01em; line-height: 1.1; }
 .ela-sm { font-size: clamp(1.2rem, 2.6vw, 1.6rem); }
 .hero .slogan { margin-top: 4px; }
+/* Tablet/phone: same characters as on desktop (teacher left, Maria right), standing on the skyline strip below the capsule */
+@media (max-width: 1000px) {
+  .char-phone { display: none !important; }
+  .char-left, .char-right { display: block; width: auto; bottom: 6px; }
+  .char-left { left: 14px; height: 170px; }
+  .char-right { right: 18px; height: 170px; }
+  .skyline { height: 180px; }
+}
+@media (max-width: 560px) {
+  .char-left { left: 8px; height: 140px; }
+  .char-right { right: 12px; height: 140px; }
+  .skyline { height: 150px; }
+}
+@media (max-width: 1000px) { .char-left, .char-right { bottom: 16px; } }
+@media (max-width: 560px) { .char-left, .char-right { bottom: 12px; } }
